@@ -8,12 +8,12 @@ This is a learning repository for implementing java task.
 ### 🚀 USAGE
 ###### bash
 ```bash
-java -jar ./out/first.jar
+java -jar ./out/artifacts/first_jar/first.jar
 ```
 ### or
 ###### bash
 ```bash
-java -jar ./out/first.jar /your/path/to/question
+java -jar ./out/artifacts/first_jar/first.jar /your/path/to/question
 ```
 
 ### FORMAT FOR YOU QUESTIONS 📄
