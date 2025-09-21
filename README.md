@@ -1,20 +1,25 @@
 # ☞ quiz
+___
 This is a learning repository for implementing java task.
 
 > [!IMPORTANT]
 > To run this code, you need to have JRE 23+ installed on your PC.
 > 
 ### 🚀 USAGE
-```cmd
+###### bash
+```bash
 java -jar ./out/first.jar
 ```
-or
-```cmd
+### or
+###### bash
+```bash
 java -jar ./out/first.jar /your/path/to/question
 ```
 
 ### FORMAT FOR YOU QUESTIONS 📄
-```json
+
+###### JSON Example
+```jsonc
 [
   {
     "question": "Question1",
@@ -23,10 +28,12 @@ java -jar ./out/first.jar /your/path/to/question
   },
   {
     "question": "Question2",
-    "options": ["Answer✅", "Answer❌" /* ...(not more than 12)] */ ]
+    "options": ["Answer✅", "Answer❌" /* ...(not more than 12) */ ],
     "answer": 0
   }
   /* ...(as much as you like) */
 ]
 ```
+___
 
+> **LICENSE:** All rights reserved
