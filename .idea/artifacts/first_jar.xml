@@ -1,0 +1,12 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="first:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/first_jar</output-path>
+    <root id="archive" name="first.jar">
+      <element id="module-output" name="first" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jetbrains/annotations/26.0.2-1/annotations-26.0.2-1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-core/2.17.2/jackson-core-2.17.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.17.2/jackson-databind-2.17.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-annotations/2.17.2/jackson-annotations-2.17.2.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
