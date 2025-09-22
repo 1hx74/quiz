@@ -18,7 +18,7 @@ java -jar ./out/artifacts/first_jar/first.jar /your/path/to/question
 ```
 
 ### FORMAT FOR YOU QUESTIONS 📄
-
+You can create your own set of questions and run a quiz on it!
 ###### JSON Example
 ```jsonc
 [
