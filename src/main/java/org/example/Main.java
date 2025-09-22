@@ -1,6 +1,5 @@
 package org.example;
 
-import java.util.Arrays;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -10,19 +9,6 @@ class Data {
     public String question;
     public String[] options;
     public int answer;
-
-    public String ConvertToString(String type) {
-        return switch (type) {
-            case "c" -> "Data {\n" +
-                    "   question=" + question + ",\n" +
-                    "   options=" + Arrays.toString(options) + ",\n" +
-                    "   answer=" + answer +
-                    "\n}";
-            case "q" -> "Вопрос: " + question + ",\n" + Arrays.toString(options);
-            case "a" -> "" + answer;
-            default -> "None";
-        };
-    }
 }
 
 class Memory {
@@ -46,14 +32,6 @@ class Memory {
             } else {
                 data = mapper.readValue(new File(file_path), Data[].class);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void write() {
-        try {
-            mapper.writeValue(new File(file_path), data);
         } catch (IOException e) {
             e.printStackTrace();
         }
