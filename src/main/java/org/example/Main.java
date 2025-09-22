@@ -63,10 +63,16 @@ class Memory {
 public class Main {
     public static void main(String[] args) {
         String help_message = """
-    hi! this is a quiz
-    run without arguments to use default questions
-    specify file path to use custom questions
-    use --help to see this message
+    \tUsage 
+    \tfor a classic qiuz:
+    \t\tjava -jar ./out/artifacts/first_jar/first.jar
+    \t or 
+    \tusage for your quiz
+    \t\tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question 
+    \tYou can see this message if you use -h or --help
+    \tTo see imput file format check us repository:
+    \t\thttps://github.com/1hx74/quiz
+    \t
     """;
 
 
