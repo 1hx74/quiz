@@ -63,16 +63,15 @@ class Memory {
 public class Main {
     public static void main(String[] args) {
         String help_message = """
-    \tUsage 
-    \tfor a classic qiuz:
-    \t\tjava -jar ./out/artifacts/first_jar/first.jar
-    \t or 
-    \tusage for your quiz
-    \t\tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question 
-    \tYou can see this message if you use -h or --help
-    \tTo see imput file format check us repository:
-    \t\thttps://github.com/1hx74/quiz
-    \t
+    Usage 
+    for a classic qiuz:
+    \tjava -jar ./out/artifacts/first_jar/first.jar
+    or usage for your quiz
+    \tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question 
+    You can see this message if you use -h or --help
+    To see imput file format check us repository:
+    https://github.com/1hx74/quiz
+ 
     """;
 
 
