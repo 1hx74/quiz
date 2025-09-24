@@ -41,16 +41,16 @@ class Memory {
 public class Main {
     public static void main(String[] args) {
         String help_message = """
-    Usage 
+    Usage\s
     for a classic qiuz:
     \tjava -jar ./out/artifacts/first_jar/first.jar
     or usage for your quiz
-    \tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question 
+    \tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question\s
     You can see this message if you use -h or --help
     To see imput file format check us repository:
     https://github.com/1hx74/quiz
- 
-    """;
+\s
+   \s""";
 
 
         if (args.length > 1) {
