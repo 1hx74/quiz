@@ -89,7 +89,7 @@ class Memory {
 public class Main {
     public static void main(String[] args) {
         String help_message = """
-    Usage
+    Usage 
     for a classic qiuz:
     \tjava -jar ./out/artifacts/first_jar/first.jar
     or usage for your quiz
@@ -97,8 +97,8 @@ public class Main {
     You can see this message if you use -h or --help
     To see imput file format check us repository:
     https://github.com/1hx74/quiz
- 
-    """;
+ \s
+    \s""";
         //Пути к файлам/
         String raznoe = "src/main/resources/raznoe.json";
         String stolici= "src/main/resources/stolici.json";
@@ -154,7 +154,6 @@ public class Main {
             System.out.println("too many arguments");
             return;
         }
-
 
 
         if (args.length == 1) {
