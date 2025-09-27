@@ -1,6 +1,5 @@
 package org.example;
 
-import java.util.Arrays;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +23,7 @@ class file {
         if ("src/main/resources/file2.json".equals(file_path)) {
             var input = getClass().getClassLoader().getResourceAsStream("file2.json");
             if (input == null) {
-                System.out.printf("Json file undefined");
+                System.out.println("Json file undefined");
                 return;
             }
             data = mapper.readValue(input, Qiuzoptions[].class);
@@ -37,18 +36,6 @@ class Data {
     public String[] options;
     public int answer;
 
-    public String ConvertToString(String type) {
-        return switch (type) {
-            case "c" -> "Data {\n" +
-                    "   question=" + question + ",\n" +
-                    "   options=" + Arrays.toString(options) + ",\n" +
-                    "   answer=" + answer +
-                    "\n}";
-            case "q" -> "Вопрос: " + question + ",\n" + Arrays.toString(options);
-            case "a" -> "" + answer;
-            default -> "None";
-        };
-    }
 }
 
 class Memory {
@@ -76,24 +63,16 @@ class Memory {
             e.printStackTrace();
         }
     }
-
-    public void write() {
-        try {
-            mapper.writeValue(new File(file_path), data);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
 }
 
 public class Main {
     public static void main(String[] args) {
         String help_message = """
-    Usage 
+    Usage\s
     for a classic qiuz:
     \tjava -jar ./out/artifacts/first_jar/first.jar
     or usage for your quiz
-    \tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question 
+    \tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question\s
     You can see this message if you use -h or --help
     To see imput file format check us repository:
     https://github.com/1hx74/quiz
