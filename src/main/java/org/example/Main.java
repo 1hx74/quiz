@@ -115,37 +115,37 @@ public class Main {
             e.printStackTrace();
             return;
         }
-        System.out.printf(read.data[0].question);
-        System.out.printf("\n");
+        System.out.println(read.data[0].question);
+
         for(int j =0;j<read.data.length;j++) {
             for (int i = 0; i < read.data[j].option.length; i++) {
-                System.out.printf(read.data[j].option[i]);
-                System.out.printf("\n");
+                System.out.println(read.data[j].option[i]);
+
             }
             Scanner in = new Scanner(System.in);
             String answer;
-            System.out.printf("Введите букву для выбора:");
+            System.out.print("Введите букву для выбора:");
             answer = in.nextLine();
             switch(answer){
                 case "a":
-                    System.out.printf("Вы выбрали тему:Столицы\n");
-                    System.out.printf("Викторина началась!\n");
+                    System.out.println("Вы выбрали тему:Столицы");
+                    System.out.println("Викторина началась!");
                     memory.reConnect(stolici);
 
                     break;
                 case "b":
-                    System.out.printf("Вы выбрали тему:Страны\n");
-                    System.out.printf("Викторина началась!\n");
+                    System.out.println("Вы выбрали тему:Страны");
+                    System.out.println("Викторина началась!");
                     memory.reConnect(countries);
                     break;
                 case "c":
-                    System.out.printf("Вы выбрали тему:Космос\n");
-                    System.out.printf("Викторина началась!\n");
+                    System.out.println("Вы выбрали тему:Космос");
+                    System.out.println("Викторина началась!");
                     memory.reConnect(space);
                     break;
                 case "d":
-                    System.out.printf("Вы выбрали тему:Разное\n");
-                    System.out.printf("Викторина началась!\n");
+                    System.out.println("Вы выбрали тему:Разное");
+                    System.out.println("Викторина началась!");
                     memory.reConnect(raznoe);
                     break;
             }
