@@ -1,69 +1,8 @@
 package org.example;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Scanner;
-
-class Qiuzoptions {
-    public String question;
-    public String[] option;
-    public Qiuzoptions(){
-
-    }
-}
-class file {
-    String file_path = "src/main/resources/file2.json";
-    public Qiuzoptions[] data = new Qiuzoptions[]{new Qiuzoptions()};
-    ObjectMapper mapper = new ObjectMapper();
-
-    public void read() throws IOException {
-
-        if ("src/main/resources/file2.json".equals(file_path)) {
-            var input = getClass().getClassLoader().getResourceAsStream("file2.json");
-            if (input == null) {
-                System.out.println("Json file undefined");
-                return;
-            }
-            data = mapper.readValue(input, Qiuzoptions[].class);
-        }
-
-    }
-}
-class Data {
-    public String question;
-    public String[] options;
-    public int answer;
-
-}
-
-class Memory {
-    String file_path = "src/main/resources/file.json";
-    public Data[] data = new Data[]{new Data()};
-    ObjectMapper mapper = new ObjectMapper();
-
-    public void reConnect(String new_path) {
-        file_path = new_path;
-    }
-
-    public void read() {
-        try {
-            if ("src/main/resources/file.json".equals(file_path)) {
-                try (var input = getClass().getClassLoader().getResourceAsStream("file.json")) {
-                    if (input == null) {
-                        throw new IOException("file.json not found in resources");
-                    }
-                    data = mapper.readValue(input, Data[].class);
-                }
-            } else {
-                data = mapper.readValue(new File(file_path), Data[].class);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-}
 
 public class Main {
     public static void main(String[] args) {
@@ -86,7 +25,7 @@ public class Main {
         Memory memory = new Memory();
         Quiz quiz = new Quiz();
 
-        file read = new file();
+        File read = new File();
         try {
             read.read();
         } catch (IOException e) {
