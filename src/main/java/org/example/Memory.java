@@ -6,7 +6,7 @@ import java.io.File;
 import java.io.IOException;
 
 class Memory {
-    String filePath = "/file.json";
+    String filePath = "/choose.json";
     public Data[] data = new Data[0];
     ObjectMapper mapper = new ObjectMapper();
 
@@ -16,16 +16,7 @@ class Memory {
 
     public void read() {
         try {
-            if ("src/main/resources/file.json".equals(filePath)) {
-                try (var input = getClass().getClassLoader().getResourceAsStream("file.json")) {
-                    if (input == null) {
-                        throw new IOException("file.json not found in resources");
-                    }
-                    data = mapper.readValue(input, Data[].class);
-                }
-            } else {
-                data = mapper.readValue(new File(filePath), Data[].class);
-            }
+            data = mapper.readValue(getClass().getResourceAsStream(filePath), Data[].class);
         } catch (IOException e) {
             e.printStackTrace();
         }

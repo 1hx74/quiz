@@ -1,0 +1,7 @@
+[
+  {
+    "question": "По какой теме вы хотите викторину?",
+    "options": ["countries", "capitals", "space", "different"],
+    "answer": 0
+  }
+]
