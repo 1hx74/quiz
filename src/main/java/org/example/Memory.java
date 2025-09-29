@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.IOException;
 
 class Memory {
-    String filePath = "src/main/resources/file.json";
-    public Data[] data = new Data[]{new Data()};
+    String filePath = "/file.json";
+    public Data[] data = new Data[0];
     ObjectMapper mapper = new ObjectMapper();
 
     public void reConnect(String new_path) {

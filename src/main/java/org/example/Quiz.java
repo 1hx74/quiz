@@ -11,10 +11,10 @@ public class Quiz {
 
         for (int i = 0; i < memory.data.length; i++) {
 
-            System.out.println("Вопрос №" + (i + 1) + ") " + memory.data[i].question);
+            System.out.println("Вопрос №" + (i + 1) + ") " + memory.data[i].getQuestion());
 
-            for (int j = 0; j < memory.data[i].options.length; j++) {
-                System.out.println(alphabet[j] + ") " + memory.data[i].options[j]);
+            for (int j = 0; j < memory.data[i].getOptions().length; j++) {
+                System.out.println(alphabet[j] + ") " + memory.data[i].getOptions()[j]);
             }
 
             System.out.print("\nВаш ответ: ");
@@ -22,13 +22,13 @@ public class Quiz {
             String ans = sc.next().toUpperCase();
             int index_ans = Arrays.asList(alphabet).indexOf(ans);
 
-            if (index_ans == memory.data[i].answer) {
+            if (memory.data[i].validAnswer(index_ans)) {
                 System.out.println("Верно!");
                 score++;
             } else {
                 System.out.println("К сожалению это не правильный ответ, правильным был вариант " +
-                        alphabet[memory.data[i].answer] + ") " +
-                        memory.data[i].options[memory.data[i].answer]);
+                        alphabet[memory.data[i].getAnswer()] + ") " +
+                        memory.data[i].getOptions()[memory.data[i].getAnswer()]);
             }
 
             System.out.print("\n");
