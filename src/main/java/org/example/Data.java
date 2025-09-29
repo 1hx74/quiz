@@ -1,16 +1,13 @@
 package org.example;
 
 public class Data {
-    private final String question;
-    private final String[] options;
-    private final int answer;
+    private String question;
+    private String[] options;
+    private int answer;
 
-    Data(String question, String[] options, int answer) {
-        this.question = question;
-        this.options = options;
-        this.answer = answer;
+    Data() {
+
     }
-
 
     public String getQuestion() {
         return question;
@@ -22,6 +19,18 @@ public class Data {
 
     public int getAnswer() {
         return answer;
+    }
+
+    public void setQuestion(String question) {
+        this.question = question;
+    }
+
+    public void setOptions(String[] options) {
+        this.options = options;
+    }
+
+    public void setAnswer(int answer) {
+        this.answer = answer;
     }
 
     public boolean validAnswer(int userAnswer) {
