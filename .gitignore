@@ -6,6 +6,7 @@ out/artifacts/first_jar/first.jar
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
+.idea
 .idea/rule_of_commit.txt
 .idea/modules.xml
 .idea/jarRepositories.xml
