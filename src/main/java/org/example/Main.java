@@ -1,7 +1,5 @@
 package org.example;
 
-import java.util.Scanner;
-
 public class Main {
     public static void main(String[] args) {
         String help_message = """
@@ -20,12 +18,6 @@ public class Main {
         memory.read();
         Quiz quiz = new Quiz();
         quiz.choose(memory);
-
-        //Scanner in = new Scanner(System.in);
-        //String answer;
-        //System.out.println("Введите букву для выбора:");
-        //answer = in.nextLine();
-
 
     }
 }
