@@ -17,7 +17,7 @@ public class Main {
         Memory memory = new Memory();
         memory.read();
         Quiz quiz = new Quiz();
-        quiz.choose(memory);
+        quiz.run(memory, true);
 
     }
 }
