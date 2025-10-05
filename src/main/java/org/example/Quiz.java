@@ -10,10 +10,10 @@ public class Quiz {
 
     private void printQuestion(Memory memory, int index, boolean choose) {
         if (choose) {
-            System.out.println("Вопрос №" + (index + 1) + ") " + memory.data[index].getQuestion());
+            System.out.println(memory.data[index].getQuestion());
         }
         else{
-            System.out.println(memory.data[index].getQuestion());
+            System.out.println("Вопрос №" + (index + 1) + ") " + memory.data[index].getQuestion());
         }
         for (int j = 0; j < memory.data[index].getOptions().length; j++) {
             System.out.println(alphabet[j] + ") " + memory.data[index].getOptions()[j]);
@@ -73,7 +73,7 @@ public class Quiz {
         int score = 0;
 
         for (int i = 0; i < memory.data.length; i++) {
-            printQuestion(memory, i, true);
+            printQuestion(memory, i, choose);
             score += prodAnswer(memory, i, getIdxAnswer(), choose);
 
             System.out.print("\n");     // it's for GUI format
