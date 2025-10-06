@@ -22,12 +22,15 @@ public class Quiz {
             System.out.print("\nВаш ответ: ");
         }
         else {
-            System.out.print("\nВаш выбор:");
+            System.out.print("\nВаш выбор: ");
         }
     }
 
     private int getIdxAnswer() {
         String answer = sc.next().toUpperCase();
+        if (answer.equals("help")) {
+            return -1;
+        }
         try {
             int temp = Integer.parseInt(answer);
             if (temp >= 0 && temp <= alphabet.length) {
@@ -42,6 +45,22 @@ public class Quiz {
 
 
     private int prodAnswer(Memory memory, int index, int answer, boolean choose) {
+        if (answer == -1) {
+            String help_message = """
+    Usage\s
+    for a classic qiuz:
+    \tjava -jar ./out/artifacts/first_jar/first.jar
+    or usage for your quiz
+    \tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question\s
+    You can see this message if you use -h or --help
+    To see imput file format check us repository:
+    https://github.com/1hx74/quiz
+ \s
+    \s""";
+            System.out.println(help_message);
+            printQuestion(memory, index, choose);
+            return prodAnswer(memory, index, getIdxAnswer(), choose);
+        }
         if (choose) {
             memory.reConnect("/" + memory.data[index].getOptions()[answer] + ".json");
             memory.read();

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
-class Memory {
+public class Memory {
     String filePath = "/choose.json";
     public Data[] data = new Data[0];
     ObjectMapper mapper = new ObjectMapper();
