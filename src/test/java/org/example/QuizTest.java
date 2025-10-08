@@ -1,22 +1,13 @@
 package org.example;
 
-import java.lang.reflect.Method;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import java.lang.reflect.Method;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
-import org.junit.jupiter.api.Test;
 import java.io.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class QuizTest {
-
-public
-    @Test
-    void testAdd() {
-        assertEquals(1, 1);
-    }
-
     @Test
     public void testPrivateMethodGetIdxAnswer() throws Exception {
         String input = "A\n";
@@ -30,9 +21,9 @@ public
         assertEquals(0, index);
     }
 
-
     @Test
     public void testPrivateMethodQuizRun(){
+        /*      подготовка данных       */
         Memory memory = new Memory();
         memory.data = new Data[3];
 
