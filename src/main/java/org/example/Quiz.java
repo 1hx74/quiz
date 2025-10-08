@@ -28,7 +28,7 @@ public class Quiz {
 
     private int getIdxAnswer() {
         String answer = sc.next().toUpperCase();
-        if (answer.equals("help")) {
+        if (answer.equalsIgnoreCase("help")) {
             return -1;
         }
         try {

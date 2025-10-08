@@ -23,7 +23,7 @@ class QuizTest {
 
     @Test
     public void testPrivateMethodQuizRun(){
-        /*      подготовка данных       */
+        /*      data preparation      */
         Memory memory = new Memory();
         memory.data = new Data[3];
 
@@ -46,7 +46,7 @@ class QuizTest {
         memory.data[1] = q2;
         memory.data[2] = q3;
 
-        /*      перехват        */
+        /*      input interception      */
         String answer = "B\nhelp\n1\nD";
         InputStream in = new ByteArrayInputStream(answer.getBytes());
         System.setIn(in);
@@ -55,21 +55,21 @@ class QuizTest {
         PrintStream originalOut = System.out;
         System.setOut(new PrintStream(outContent));
 
-        /*      выполнение          */
+        /*      execution     */
         Quiz quiz = new Quiz();
         quiz.run(memory,false);
 
-        /*      восстановление      */
+        /*      restoration      */
         System.setOut(originalOut);
 
 
-        /*      проверки        */
+        /*      assertions      */
         String output = outContent.toString();
 
         assertTrue(output.contains("Usage"),
-                "Вывод не содержит справку (usage)");
+                "Output does not contain help message (usage)");
 
         assertTrue(output.contains("Ваш счёт: 2 из 3"),
-                "В выводе не найден счёт 2");
+                "Output does not contain score 2");
     }
 }

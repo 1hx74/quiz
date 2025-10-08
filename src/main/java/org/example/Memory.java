@@ -17,7 +17,7 @@ public class Memory {
         try {
             data = mapper.readValue(getClass().getResourceAsStream(filePath), Data[].class);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("[ERROR]: " + e.getMessage());
         }
     }
 }
