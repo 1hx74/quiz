@@ -47,7 +47,6 @@ class QuizTest {
         data[0] = q1;
         data[1] = q2;
         data[2] = q3;
-
         memory.setData(data);
 
         /*      input interception      */
@@ -65,7 +64,6 @@ class QuizTest {
 
         /*      restoration      */
         System.setOut(originalOut);
-
 
         /*      assertions      */
         String output = outContent.toString();

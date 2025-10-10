@@ -5,9 +5,7 @@ public class Data {
     private String[] options;
     private int answer;
 
-    Data() {
-
-    }
+    Data() {}
 
     public String getQuestion() {
         return question;

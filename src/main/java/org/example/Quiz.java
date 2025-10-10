@@ -43,7 +43,6 @@ public class Quiz {
         return Arrays.asList(alphabet).indexOf(answer);
     }
 
-
     private int prodAnswer(Memory memory, int index, int answer, boolean choose) {
         if (answer == -1) {
             String help_message = """
@@ -80,8 +79,6 @@ public class Quiz {
         }
         return 0;
     }
-
-
 
     /*      public!     */
     public void run(Memory memory) {
