@@ -5,9 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 
 public class Memory {
-    String filePath = "/choose.json";
-    public Data[] data = new Data[0];
-    ObjectMapper mapper = new ObjectMapper();
+    private String filePath = "/choose.json";
+    private final ObjectMapper mapper = new ObjectMapper();
+    private Data[] data = new Data[0];
+
+    public Data[] getData() {
+        return data;
+    }
 
     public void reConnect(String new_path) {
         filePath = new_path;
