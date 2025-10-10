@@ -1,7 +1,6 @@
 package org.example;
 
 import org.junit.jupiter.api.Test;
-import java.lang.reflect.Method;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.*;
@@ -9,16 +8,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class QuizTest {
     @Test
-    public void testPrivateMethodGetIdxAnswer() throws Exception {
-        String input = "A\n";
+    public void testMethodGetIdxAnswer() {
+        String input = "A\nB\nhelp\n3\n";
+        int[] expected = {0, 1, -1, 2};
+
         InputStream in = new ByteArrayInputStream(input.getBytes());
         System.setIn(in);
-        Quiz quiz = new Quiz();
-        Method addMethod = Quiz.class.getDeclaredMethod("getIdxAnswer");
-        addMethod.setAccessible(true);
 
-        int index = (int) addMethod.invoke(quiz);
-        assertEquals(0, index);
+        Quiz quiz = new Quiz();
+
+        for (int j : expected) {
+            int index = quiz.getIdxAnswer();
+            assertEquals(j, index);
+        }
     }
 
     @Test
