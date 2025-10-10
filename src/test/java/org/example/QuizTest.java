@@ -25,7 +25,8 @@ class QuizTest {
     public void testPrivateMethodQuizRun(){
         /*      data preparation      */
         Memory memory = new Memory();
-        memory.data = new Data[3];
+        /* todo */
+        Data[] data = new Data[3];
 
         Data q1 = new Data();
         q1.setQuestion("question1");
@@ -42,9 +43,12 @@ class QuizTest {
         q3.setOptions(new String[] { "answer1", "answer2", "answer3", "answer4" });
         q3.setAnswer(3);
 
-        memory.data[0] = q1;
-        memory.data[1] = q2;
-        memory.data[2] = q3;
+        /* todo */
+        data[0] = q1;
+        data[1] = q2;
+        data[2] = q3;
+
+        memory.setData(data);
 
         /*      input interception      */
         String answer = "B\nhelp\n1\nD";

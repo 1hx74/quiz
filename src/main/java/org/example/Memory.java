@@ -13,6 +13,10 @@ public class Memory {
         return data;
     }
 
+    public void setData(Data[] data) {
+        this.data = data;
+    }
+
     public void reConnect(String new_path) {
         filePath = new_path;
     }
