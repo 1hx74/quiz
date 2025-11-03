@@ -7,6 +7,8 @@ public class Main {
         Quiz quiz = new Quiz();
         quiz.run(memory, true);
 
+        //Users users = new Users();
+
         //Token token = new Token();
 
         //Bot bot = new Bot(token.get());
