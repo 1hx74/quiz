@@ -7,12 +7,17 @@ public class Main {
         Quiz quiz = new Quiz();
         quiz.run(memory, true);
 
-        //Users users = new Users();
+        /*
+        Users users = new Users();
+        Producer producer = new Producer();
+        producer.setUsers(users);
 
-        //Token token = new Token();
+        Token token = new Token();
 
-        //Bot bot = new Bot(token.get());
-        //bot.start();
+        Bot bot = new Bot(token.get());
+        bot.setProduser(producer);
+        bot.start();
+        */
 
     }
 }

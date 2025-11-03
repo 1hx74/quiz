@@ -20,13 +20,17 @@ import java.util.Arrays;
 import java.util.List;
 
 public class Bot implements LongPollingSingleThreadUpdateConsumer {
-    private final Producer produser = new Producer();
+    private  Producer producer;
     private final TelegramClient telegramClient;
     private final String botToken;
 
     public Bot(String botToken) {
         this.botToken = botToken;
         telegramClient = new OkHttpTelegramClient(botToken);
+    }
+
+    public void setProduser(Producer producer) {
+        this.producer = producer;
     }
 
     private void registerBotCommands() {
@@ -114,7 +118,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
     public void consume(Update update) {
         Content content = parse(update);
-        sendMessage(toMessage(produser.produce(content)));
+        sendMessage(toMessage(producer.produce(content)));
     }
 
     public void start() {
