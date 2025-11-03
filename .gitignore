@@ -4,6 +4,7 @@ out/artifacts/first_jar/first.jar
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+src/main/resources/bot_token.txt
 
 ### IntelliJ IDEA ###
 .idea
