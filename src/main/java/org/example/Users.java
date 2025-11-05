@@ -3,6 +3,12 @@ package org.example;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Класс для управления пользователями викторины.
+ * Обеспечивает хранение, добавление, удаление и поиск пользователей.
+ * Автоматически сохраняет данные при завершении работы приложения.
+ */
+
 public class Users {
     private Map<String, UserData> users;
 

@@ -1,5 +1,10 @@
 package org.example;
 
+/**
+ * Класс для хранения и передачи контента между компонентами системы.
+ * Содержит информацию о сообщении, пользователе и параметрах ответа.
+ *
+ */
 public class Content {
     private final boolean out;
     private String chatId;

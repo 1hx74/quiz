@@ -5,6 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+/**
+ * Класс для загрузки и хранения токена телеграм бота.
+ * Токен загружается из файла ресурсов при первом обращении.
+ */
+
 public class Token {
     String token = "";
 

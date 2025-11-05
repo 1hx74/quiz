@@ -1,9 +1,12 @@
 package org.example;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.IOException;
 
+/**
+ * Класс для работы с хранилищем данных викторины.
+ * Обеспечивает загрузку и управление вопросами из JSON-файлов.
+ */
 public class Memory {
     private String filePath = "/choose.json";
     private final ObjectMapper mapper = new ObjectMapper();

@@ -2,6 +2,11 @@ package org.example;
 
 import java.util.Map;
 
+/**
+ * Класс для хранения данных пользователя.
+ * Содержит информацию о состоянии, прогрессе и результатах пользователя в викторине.
+ */
+
 public class UserData {
     private String chatId;
     private String state;

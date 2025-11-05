@@ -1,5 +1,10 @@
 package org.example;
 
+/**
+ * Класс для хранения данных вопроса викторины.
+ * Содержит вопрос, варианты ответов и правильный ответ.
+ */
+
 public class Data {
     private String question;
     private String[] options;
