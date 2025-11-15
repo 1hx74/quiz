@@ -127,9 +127,9 @@ public class Quiz {
         }
 
         if (choose) {
-            result += "\nВаш ответ: ";
-        } else {
             result += "\nВаш выбор: ";
+        } else {
+            result += "\nВаш ответ: ";
         }
 
         return result;
