@@ -157,59 +157,7 @@ public class Quiz {
         return Arrays.asList(alphabet).indexOf(answer);
     }
 
-    /**
-     * Обрабатывает ответ пользователя на вопрос викторины (рекурсивная версия).
-     *
-     * @param memory хранилище данных с вопросами
-     * @param index индекс текущего вопроса
-     * @param answer ответ пользователя (-1 для справки)
-     * @param choose true - выбор темы, false - обычный вопрос
-     * @return строку с результатом: справку, сообщение о правильности ответа или результат новой викторины
-     */
-    private String processAnswer(Memory memory, int index, int answer, boolean choose) {
-        if (answer == -1) {
-            String helpMessage = """
-    Usage\s
-    for a classic qiuz:
-    \tjava -jar ./out/artifacts/first_jar/first.jar
-    or usage for your quiz
-    \tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question\s
-    You can see this message if you use -h or --help
-    To see input file format check us repository:
-    https://github.com/1hx74/quiz
- \s
-    \s""";
-            return helpMessage + "\n" + printQuestion(memory, index, choose);
-        }
 
-        if (choose) {
-            // Рекурсивный выбор темы
-            memory.reConnect("/" + memory.getData()[index].getOptions()[answer] + ".json");
-            memory.read();
-            Quiz quiz = new Quiz();  // Используем конструктор по умолчанию
-            return quiz.run(memory, false);  // Рекурсивный вызов с новой темой
-        } else {
-            if (memory.getData()[index].validAnswer(answer)) {
-                return "Верно!";
-            } else {
-                int correctAnswerIndex = memory.getData()[index].getAnswer();
-                String correctAnswerLetter = alphabet[correctAnswerIndex];
-                String correctAnswerText = memory.getData()[index].getOptions()[correctAnswerIndex];
-                return "К сожалению это не правильный ответ, правильным был вариант " +
-                        correctAnswerLetter + ") " + correctAnswerText;
-            }
-        }
-    }
-
-    /**
-     * Обрабатывает одиночный ответ для пошагового режима.
-     *
-     * @param memory хранилище данных с вопросами
-     * @param index индекс текущего вопроса
-     * @param answer ответ пользователя (-1 для справки)
-     * @param choose true - выбор темы, false - обычный вопрос
-     * @return строку с результатом обработки ответа
-     */
     /**
      * Обрабатывает одиночный ответ для пошагового режима.
      *
