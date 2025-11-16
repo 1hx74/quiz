@@ -170,22 +170,6 @@ public class Quiz {
     private String processSingleAnswer(Memory memory, int index, int answer, boolean choose) {
         System.out.println("[QUIZ] processSingleAnswer: индекс=" + index + ", ответ=" + answer + ", режим=" + choose);
 
-        if (answer == -1) {
-            System.out.println("[QUIZ] Пользователь запросил справку");
-            String helpMessage = """
-    Usage\s
-    for a classic qiuz:
-    \tjava -jar ./out/artifacts/first_jar/first.jar
-    or usage for your quiz
-    \tjava -jar ./out/artifacts/first_jar/first.jar /your/path/to/question\s
-    You can see this message if you use -h or --help
-    To see input file format check us repository:
-    https://github.com/1hx74/quiz
- \s
-    \s""";
-            return helpMessage + "\n" + printQuestion(memory, index, choose);
-        }
-
         if (choose) {
             String selectedTopic = memory.getData()[index].getOptions()[answer];
             System.out.println("[QUIZ] Выбрана тема: " + selectedTopic);
