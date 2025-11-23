@@ -9,19 +9,13 @@ import java.util.Scanner;
  * и подсчета результатов. Поддерживает два режима работы: выбор темы и обычная викторина.
  */
 public class Quiz {
-    private final String[] alphabet = {"A","B","C","D"};
+    private final String[] alphabet = {"A","B","C","D"};    //ТЕПЕРЬ FINAL
+    private final Memory memory;                            //ТЕПЕРЬ FINAL
+    private final boolean chooseMode;                       //ТЕПЕРЬ FINAL
+    private final Scanner sc = new Scanner(System.in);      //ТЕПЕРЬ FINAL
+
     private int currentQuestion = 0;
     private int score = 0;
-    private Memory memory;
-    private boolean chooseMode;
-    private final Scanner sc = new Scanner(System.in);
-
-    /**
-     * Конструктор по умолчанию для рекурсивных вызовов.
-     */
-    public Quiz() {
-        System.out.println("[QUIZ] Создан новый экземпляр Quiz");
-    }
 
     /**
      * Конструктор класса Quiz для пошагового режима.
@@ -34,6 +28,15 @@ public class Quiz {
         this.chooseMode = chooseMode;
         System.out.println("[QUIZ] Создан Quiz: режим=" + (chooseMode ? "выбор темы" : "викторина") +
                 ", вопросов=" + memory.getData().length);
+    }
+
+    /**
+     * Конструктор по умолчанию для рекурсивных вызовов (для обратной совместимости).
+     */
+    public Quiz() {
+        this.memory = new Memory();
+        this.chooseMode = false;
+        System.out.println("[QUIZ] Создан пустой экземпляр Quiz");
     }
 
     /**
@@ -100,9 +103,36 @@ public class Quiz {
      * @return строку с результатами
      */
     public String getResults() {
-        String results = "Ваш счёт: " + score + " из " + memory.getData().length;
+        String results = "Результаты викторины: " + score + " из " + memory.getData().length;
         System.out.println("[QUIZ] Результаты: " + results);
         return results;
+    }
+
+    /**
+     * Получает текущий счет викторины.
+     *
+     * @return количество правильных ответов
+     */
+    public int getScore() {
+        return score;
+    }
+
+    /**
+     * Получает режим работы викторины.
+     *
+     * @return true если режим выбора темы, false если обычная викторина
+     */
+    public boolean isChooseMode() {
+        return chooseMode;
+    }
+
+    /**
+     * Получает хранилище данных.
+     *
+     * @return объект Memory с вопросами
+     */
+    public Memory getMemory() {
+        return memory;
     }
 
     /**
@@ -114,25 +144,27 @@ public class Quiz {
      * @return форматированный текст вопроса с вариантами ответов
      */
     private String printQuestion(Memory memory, int index, boolean choose) {
-        String result = "";
+        StringBuilder result = new StringBuilder();
 
         if (choose) {
-            result += memory.getData()[index].getQuestion() + "\n";
+            result.append(memory.getData()[index].getQuestion()).append("\n");
         } else {
-            result += "Вопрос №" + (index + 1) + ") " + memory.getData()[index].getQuestion() + "\n";
+            result.append("Вопрос №").append(index + 1).append(") ")
+                    .append(memory.getData()[index].getQuestion()).append("\n");
         }
 
         for (int j = 0; j < memory.getData()[index].getOptions().length; j++) {
-            result += alphabet[j] + ") " + memory.getData()[index].getOptions()[j] + "\n";
+            result.append(alphabet[j]).append(") ")
+                    .append(memory.getData()[index].getOptions()[j]).append("\n");
         }
 
         if (choose) {
-            result += "\nВаш выбор: ";
+            result.append("\nВаш выбор: ");
         } else {
-            result += "\nВаш ответ: ";
+            result.append("\nВаш ответ: ");
         }
 
-        return result;
+        return result.toString();
     }
 
     /**
@@ -140,23 +172,33 @@ public class Quiz {
      *
      * @return индекс ответа или -1 для справки
      */
-    int getIdxAnswer() {
-        String answer = sc.next().toUpperCase();
+    public int getIdxAnswer() {
+        // Добавляем проверку наличия данных для предотвращения NoSuchElementException
+        if (!sc.hasNextLine()) {
+            System.out.println("[QUIZ] Нет данных для чтения");
+            return -1;
+        }
+
+        String answer = sc.nextLine().toUpperCase().trim();
+
+        if (answer.isEmpty()) {
+            return -1;
+        }
+
         if (answer.equalsIgnoreCase("help")) {
             return -1;
         }
         try {
             int temp = Integer.parseInt(answer);
-            if (temp >= 0 && temp <= alphabet.length) {
+            if (temp >= 1 && temp <= alphabet.length) {
                 return temp - 1;
             }
         } catch (NumberFormatException e) {
-            // pass
+            // Игнорируем, буквенный формат
         }
 
         return Arrays.asList(alphabet).indexOf(answer);
     }
-
 
     /**
      * Обрабатывает одиночный ответ для пошагового режима.
@@ -190,7 +232,7 @@ public class Quiz {
     }
 
     /**
-     * Запускает викторину в указанном режиме (с рекусией).
+     * Запускает викторину в указанном режиме (с рекурсией).
      *
      * @param memory хранилище данных с вопросами
      * @param choose true - режим выбора темы, false - обычный вопрос
@@ -198,33 +240,49 @@ public class Quiz {
      */
     public String run(Memory memory, boolean choose) {
         System.out.println("[QUIZ] Запуск викторины в режиме: " + (choose ? "выбор темы" : "обычная"));
-        String result = "";
-        int score = 0;
+        StringBuilder result = new StringBuilder();
+        int localScore = 0;
 
         for (int i = 0; i < memory.getData().length; i++) {
-            result += printQuestion(memory, i, choose);
+            result.append(printQuestion(memory, i, choose));
 
-            String answerResult = processSingleAnswer(memory, i, getIdxAnswer(), choose);
-            result += answerResult + "\n";
+            int answerIndex = getIdxAnswer();
+            // Проверяем, что получили валидный ответ
+            if (answerIndex == -1) {
+                result.append("Неверный формат ответа\n");
+                continue;
+            }
+
+            String answerResult = processSingleAnswer(memory, i, answerIndex, choose);
+            result.append(answerResult).append("\n");
 
             // если это рекурсивный вызов (выбор темы), прерываем текущую викторину
             if (choose && i == 0) {
                 System.out.println("[QUIZ] Выбор темы завершен, возвращаем результат");
-                return result;
+                return result.toString();
             }
 
-            if (!choose && memory.getData()[i].validAnswer(getIdxAnswer())) {
-                score++;
+            if (!choose && memory.getData()[i].validAnswer(answerIndex)) {
+                localScore++;
             }
 
-            result += "\n";
+            result.append("\n");
         }
 
         if (!choose) {
-            result += "Ваш счёт: " + score + " из " + memory.getData().length;
+            result.append("Ваш счёт: ").append(localScore).append(" из ").append(memory.getData().length);
         }
 
         System.out.println("[QUIZ] Викторина завершена");
-        return result;
+        return result.toString();
+    }
+
+    /**
+     * Сбрасывает состояние викторины для повторного использования.
+     */
+    public void reset() {
+        this.currentQuestion = 0;
+        this.score = 0;
+        System.out.println("[QUIZ] Состояние викторины сброшено");
     }
 }

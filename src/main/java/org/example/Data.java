@@ -6,36 +6,53 @@ package org.example;
  */
 
 public class Data {
-    private String question;
-    private String[] options;
-    private int answer;
+    private final String question;  //ТЕПЕРЬ ФАЙНАЛ
+    private final String[] options; //ТЕПЕРЬ ФАЙНАЛ
+    private final int answer;       //ТЕПЕРЬ ФАЙНАЛ
 
-    Data() {}
+    /**
+     * Конструктор для создания объекта вопроса.
+     *
+     * @param question текст вопроса
+     * @param options массив вариантов ответов
+     * @param answer индекс правильного ответа
+     */
+    public Data(String question, String[] options, int answer) {
+        this.question = question;
+        this.options = options != null ? options.clone() : new String[0];
+        this.answer = answer;
+    }
+
+    /**
+     * Конструктор по умолчанию для Jackson
+     */
+    public Data() {
+        this.question = "";
+        this.options = new String[0];
+        this.answer = 0;
+    }
 
     public String getQuestion() {
         return question;
     }
 
+    /**
+     * Возвращает копию массива вариантов ответов
+     */
     public String[] getOptions() {
-        return options;
+        return options.clone();
     }
 
     public int getAnswer() {
         return answer;
     }
 
-    public void setQuestion(String question) {
-        this.question = question;
-    }
-
-    public void setOptions(String[] options) {
-        this.options = options;
-    }
-
-    public void setAnswer(int answer) {
-        this.answer = answer;
-    }
-
+    /**
+     * Проверяет правильность ответа пользователя.
+     *
+     * @param userAnswer индекс ответа пользователя
+     * @return true если ответ правильный, false иначе
+     */
     public boolean validAnswer(int userAnswer) {
         return userAnswer == answer;
     }

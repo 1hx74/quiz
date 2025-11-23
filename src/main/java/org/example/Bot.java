@@ -1,6 +1,5 @@
 package org.example;
 
-// Основные импорты Telegram Bot API
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
@@ -16,7 +15,6 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-// Стандартные Java импорты
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +30,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     private Producer producer;
     private final TelegramClient telegramClient;
     private final String botToken;
+    private TelegramBotsLongPollingApplication botsApplication;
 
     /**
      * Конструктор бота.
@@ -64,7 +63,8 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
                     SetMyCommands.builder()
                             .commands(Arrays.asList(
                                     new BotCommand("start", "Запустить бота"),
-                                    new BotCommand("help", "Помощь")
+                                    new BotCommand("help", "Помощь"),
+                                    new BotCommand("leaderboard", "Топ 5 игроков")
                             ))
                             .scope(new BotCommandScopeDefault())
                             .build()
@@ -89,24 +89,26 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
      */
     private Content parse(Update update) {
         System.out.println("[BOT] Парсинг входящего обновления");
-        Content content = new Content(false);
 
         if (update.hasMessage()) {
             Message msg = update.getMessage();
-            content.setChatId(String.valueOf(msg.getChatId()));
+            String chatId = String.valueOf(msg.getChatId());
+            String text = msg.hasText() ? msg.getText() : "";
 
-            if (msg.hasText()) {
-                content.setText(msg.getText());
-            }
-            System.out.println("[BOT] Получено сообщение от " + msg.getChatId() + ": " + msg.getText());
+            System.out.println("[BOT] Получено сообщение от " + chatId + ": " + text);
+            return new Content(false, chatId, text);
+
         } else if (update.hasCallbackQuery()) {
             CallbackQuery query = update.getCallbackQuery();
-            content.setChatId(String.valueOf(query.getMessage().getChatId()));
-            content.setClick(query.getData());
-            System.out.println("[BOT] Получен callback от " + query.getMessage().getChatId() + ": " + query.getData());
+            String chatId = String.valueOf(query.getMessage().getChatId());
+            String clickData = query.getData();
+
+            System.out.println("[BOT] Получен callback от " + chatId + ": " + clickData);
+            return new Content(false, chatId, null, new String[]{clickData});
         }
 
-        return content;
+        // Если тип обновления не поддерживается, возвращаем пустой контент
+        return new Content(false);
     }
 
     /**
@@ -200,20 +202,47 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     }
 
     /**
-     * Запускает бота в режиме long polling.
+     * Остановка бота
+     */
+    public void stop() {
+        System.out.println("[BOT] Остановка бота...");
+        if (botsApplication != null) {
+            try {
+                botsApplication.close();
+                System.out.println("[BOT] LongPollingApplication закрыт");
+            } catch (Exception e) {
+                System.err.println("[BOT] Ошибка при закрытии LongPollingApplication");
+                e.printStackTrace(System.err);
+            }
+        }
+        System.out.println("[BOT] Бот остановлен");
+    }
+
+    /**
+     * Запускает бота в режиме long polling
      */
     public void start() {
-        try (TelegramBotsLongPollingApplication botsApplication = new TelegramBotsLongPollingApplication()) {
+        try {
             System.out.println("[BOT] Запуск бота...");
 
-            // Сначала регистрируем бота, потом команды
+            // Создаем экземпляр приложения
+            botsApplication = new TelegramBotsLongPollingApplication();
+
+            // Регистрируем бота
             botsApplication.registerBot(botToken, this);
             System.out.println("[BOT] Бот зарегистрирован в LongPollingApplication");
 
+            // Регистрируем команды
             registerBotCommands();
             System.out.println("[BOT] Бот успешно запущен и готов к работе");
 
-            Thread.currentThread().join();
+            // Добавляем хук
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("[BOT] Получен сигнал завершения работы...");
+                stop();
+            }));
+
+            System.out.println("[BOT] Бот работает в фоновом режиме");
 
         } catch (Exception e) {
             System.err.println("[BOT] Фатальная ошибка запуска бота");

@@ -11,15 +11,15 @@ public class Main {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Token token = new Token();
-        String botToken = token.get();
+        Token token = new Token(); // теперь токен загружается в конструкторе
 
-        if (botToken == null || botToken.isEmpty()) {
+        if (!token.isValid()) {
             System.err.println("Ошибка: Токен бота не найден!");
             System.err.println("Убедитесь, что файл bot_token.txt существует в ресурсах");
             return;
         }
 
+        String botToken = token.get();
         Bot bot = new Bot(botToken);
         bot.setProduser(producer);
 
