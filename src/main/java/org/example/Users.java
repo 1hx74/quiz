@@ -1,6 +1,9 @@
 package org.example;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -20,6 +23,7 @@ public class Users {
         users = new HashMap<>();
         loadFromDisk();
         Runtime.getRuntime().addShutdownHook(new Thread(this::saveToDisk));
+        mapper.enable(SerializationFeature.INDENT_OUTPUT);
     }
 
     /**
@@ -119,7 +123,7 @@ public class Users {
      */
     public void saveToDisk() {
         try {
-            String json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(users);
+            String json = mapper.writeValueAsString(users);
             Files.write(Paths.get(filePath), json.getBytes());
             System.out.println("[USERS] Данные пользователей сохранены в файл: " + filePath +
                     ", пользователей: " + users.size());
@@ -135,8 +139,7 @@ public class Users {
         try {
             if (Files.exists(Paths.get(filePath))) {
                 String json = new String(Files.readAllBytes(Paths.get(filePath)));
-                users = mapper.readValue(json,
-                        mapper.getTypeFactory().constructMapType(Map.class, String.class, UserData.class));
+                users = mapper.readValue(json, new TypeReference<Map<String, UserData>>() {});
                 System.out.println("[USERS] Данные пользователей загружены из файла: " + filePath +
                         ", пользователей: " + users.size());
             } else {
