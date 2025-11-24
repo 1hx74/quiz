@@ -437,7 +437,7 @@ class QuizTest {
         Content response = result[0];
         assertTrue(response.isOut(), "Ответ должен быть исходящим");
         assertEquals("chat123", response.getChatId(), "ChatId должен соответствовать");
-        assertEquals(true, response.getText().contains("Лидерборд"), "Текст должен содержать лидерборд");
+        assertTrue(response.getText().contains("Лидерборд"), "Текст должен содержать лидерборд");
         assertNull(response.getOptions(), "Лидерборд не должен иметь кнопок");
     }
 
