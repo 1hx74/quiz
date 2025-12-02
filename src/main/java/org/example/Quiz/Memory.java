@@ -1,6 +1,7 @@
-package org.example;
+package org.example.Quiz;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.io.IOException;
 
 /**
@@ -8,8 +9,8 @@ import java.io.IOException;
  * Обеспечивает загрузку и управление вопросами из JSON-файлов.
  */
 public class Memory {
-    private final ObjectMapper mapper = new ObjectMapper();     //ТЕПЕРЬ FINAL
-    private Data[] data = new Data[0];
+    private final ObjectMapper mapper = new ObjectMapper();
+    private DataQuestion[] data = new DataQuestion[0];
     private String filePath = "/choose.json";
 
     /**
@@ -27,7 +28,7 @@ public class Memory {
         read();
     }
 
-    public Data[] getData() {
+    public DataQuestion[] getData() {
         return data;
     }
 
@@ -35,8 +36,8 @@ public class Memory {
         return filePath;
     }
 
-    public void setData(Data[] data) {
-        this.data = data != null ? data : new Data[0];
+    public void setData(DataQuestion[] data) {
+        this.data = data != null ? data : new DataQuestion[0];
     }
 
     /**
@@ -53,14 +54,14 @@ public class Memory {
      */
     public void read() {
         try {
-            data = mapper.readValue(getClass().getResourceAsStream(filePath), Data[].class);
+            data = mapper.readValue(getClass().getResourceAsStream(filePath), DataQuestion[].class);
             System.out.println("[MEMORY] Загружено " + data.length + " вопросов из " + filePath);
         } catch (IOException e) {
             System.err.println("[MEMORY] Ошибка загрузки данных из " + filePath + ": " + e.getMessage());
-            data = new Data[0];
+            data = new DataQuestion[0];
         } catch (NullPointerException e) {
             System.err.println("[MEMORY] Файл не найден: " + filePath);
-            data = new Data[0];
+            data = new DataQuestion[0];
         }
     }
 

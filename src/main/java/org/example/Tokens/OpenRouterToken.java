@@ -1,4 +1,4 @@
-package org.example;
+package org.example.Tokens;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -6,25 +6,25 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 /**
- * Класс для загрузки и хранения токена телеграм бота.
+ * Класс для загрузки и хранения токена Open Router.
  * Токен загружается из файла ресурсов при создании объекта.
  */
-public class Token {
-    private final String token;     //ТЕПЕРЬ ФАЙНАЛ
+public class OpenRouterToken {
+    private final String token;
 
     /**
      * Конструктор загружает токен при создании объекта.
      */
-    public Token() {
+    public OpenRouterToken() {
         this.token = loadToken();
-        System.out.println("[TOKEN] Токен загружен: " +
+        System.out.println("[OPEN_ROUTER_TOKEN] Токен загружен: " +
                 (!token.isEmpty() ? "успешно" : "не удалось"));
     }
 
     /**
-     * Возвращает токен бота.
+     * Возвращает токен Open Router.
      *
-     * @return токен бота или пустую строку если не удалось загрузить
+     * @return токен Open Router или пустую строку если не удалось загрузить
      */
     public String get() {
         return token;
@@ -36,7 +36,7 @@ public class Token {
      * @return загруженный токен или пустая строка при ошибке
      */
     private String loadToken() {
-        String fileName = "/bot_token.txt";
+        String fileName = "/open_router_token.txt";
 
         try (InputStream is = getClass().getResourceAsStream(fileName)) {
             if (is != null) {
@@ -47,10 +47,10 @@ public class Token {
                     }
                 }
             } else {
-                System.err.println("[TOKEN] Файл токена не найден: " + fileName);
+                System.err.println("[OPEN_ROUTER_TOKEN] Файл токена не найден: " + fileName);
             }
         } catch (IOException e) {
-            System.err.println("[TOKEN] Ошибка загрузки токена: " + e.getMessage());
+            System.err.println("[OPEN_ROUTER_TOKEN] Ошибка загрузки токена: " + e.getMessage());
         }
 
         return "";

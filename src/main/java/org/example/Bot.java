@@ -1,40 +1,36 @@
 package org.example;
 
+import org.example.DataMessage.Content;
+import org.example.DataMessage.KeyboardService;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
-import org.telegram.telegrambots.meta.api.objects.message.Message;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Телеграм бот для проведения викторин.
  * Обрабатывает входящие сообщения и callback-запросы, управляет состоянием викторины.
- *
- * @author org.example
- * @version 1.0
  */
 public class Bot implements LongPollingSingleThreadUpdateConsumer {
     private Producer producer;
     private final TelegramClient telegramClient;
     private final String botToken;
     private TelegramBotsLongPollingApplication botsApplication;
+    private final Map<String, InlineKeyboardMarkup> keyboardCache = new HashMap<>();
 
     /**
      * Конструктор бота.
-     *
      * @param botToken токен бота полученный от BotFather
      */
     public Bot(String botToken) {
@@ -45,16 +41,16 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
     /**
      * Устанавливает продюсера для обработки контента.
-     *
-     * @param producer объект продюсера
+     * @param producer объект продюсера для обработки бизнес-логики
      */
-    public void setProduser(Producer producer) {
+    public void setProducer(Producer producer) {
         this.producer = producer;
         System.out.println("[BOT] Установлен Producer");
+        initializeKeyboards();
     }
 
     /**
-     * Регистрирует команды бота в меню.
+     * Регистрирует команды бота в меню Telegram.
      */
     private void registerBotCommands() {
         try {
@@ -63,6 +59,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
                     SetMyCommands.builder()
                             .commands(Arrays.asList(
                                     new BotCommand("start", "Запустить бота"),
+                                    new BotCommand("menu", "Меню"),
                                     new BotCommand("help", "Помощь"),
                                     new BotCommand("leaderboard", "Топ 5 игроков")
                             ))
@@ -82,80 +79,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     }
 
     /**
-     * Парсит входящее обновление от Telegram API.
-     *
-     * @param update входящее обновление
-     * @return объект Content с извлеченными данными
-     */
-    private Content parse(Update update) {
-        System.out.println("[BOT] Парсинг входящего обновления");
-
-        if (update.hasMessage()) {
-            Message msg = update.getMessage();
-            String chatId = String.valueOf(msg.getChatId());
-            String text = msg.hasText() ? msg.getText() : "";
-
-            System.out.println("[BOT] Получено сообщение от " + chatId + ": " + text);
-            return new Content(false, chatId, text);
-
-        } else if (update.hasCallbackQuery()) {
-            CallbackQuery query = update.getCallbackQuery();
-            String chatId = String.valueOf(query.getMessage().getChatId());
-            String clickData = query.getData();
-
-            System.out.println("[BOT] Получен callback от " + chatId + ": " + clickData);
-            return new Content(false, chatId, null, new String[]{clickData});
-        }
-
-        // Если тип обновления не поддерживается, возвращаем пустой контент
-        return new Content(false);
-    }
-
-    /**
-     * Преобразует объект Content в сообщение для отправки.
-     *
-     * @param content объект с данными для отправки
-     * @return объект SendMessage для отправки через Telegram API или null если отправка не требуется
-     */
-    private SendMessage toMessage(Content content) {
-        if (!content.isOut()) {
-            return null;
-        }
-
-        System.out.println("[BOT] Преобразование Content в SendMessage ");
-        SendMessage.SendMessageBuilder<?, ?> builder = SendMessage.builder()
-                .chatId(content.getChatId());
-
-        if (content.getText() != null && !content.getText().isEmpty()) {
-            builder.text(content.getText());
-        } else {
-            System.out.println("[BOT] Нет текста для отправки");
-            return null;
-        }
-
-        if (content.getOptions() != null && content.getOptions().length > 0) {
-            System.out.println("[BOT] Добавление клавиатуры с " + content.getOptions().length + " кнопками");
-            List<KeyboardRow> rows = new ArrayList<>();
-            for (String option : content.getOptions()) {
-                KeyboardRow row = new KeyboardRow();
-                row.add(option);
-                rows.add(row);
-            }
-
-            ReplyKeyboardMarkup keyboard = ReplyKeyboardMarkup.builder()
-                    .keyboard(rows)
-                    .resizeKeyboard(true)
-                    .oneTimeKeyboard(false)
-                    .build();
-
-            builder.replyMarkup(keyboard);
-        }
-
-        return builder.build();
-    }
-
-    /**
-     * Отправляет сообщение через Telegram API
+     * Отправляет сообщение через Telegram API.
      * @param message сообщение для отправки
      */
     public void sendMessage(SendMessage message) {
@@ -163,7 +87,6 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
             System.out.println("[BOT] Попытка отправить пустое сообщение");
             return;
         }
-
         try {
             System.out.println("[BOT] Отправка сообщения для " + message.getChatId());
             telegramClient.execute(message);
@@ -176,25 +99,55 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
     /**
      * Обрабатывает входящее обновление от Telegram API.
-     *
-     * @param update входящее обновление
+     * Получает обновления из телеграма и передает в Producer через Content.
      */
+    @Override
     public void consume(Update update) {
         try {
-            System.out.println("[BOT] НОВОЕ ОБНОВЛЕНИЕ ");
-            Content content = parse(update);
-            Content[] messages = producer.produce(content);
+            Content[] responseContents = null;
+            String chatId;
 
-            System.out.println("[BOT] Producer вернул " + messages.length + " сообщений для отправки");
-            for (int i = 0; i < messages.length; i++) {
-                Content message = messages[i];
-                System.out.println("[BOT] Обработка сообщения " + (i + 1) + "/" + messages.length);
-                SendMessage telegramMessage = toMessage(message);
-                if (telegramMessage != null) {
-                    sendMessage(telegramMessage);
-                }
+            System.out.println("[BOT] НОВОЕ ОБНОВЛЕНИЕ");
+
+            if (update.hasCallbackQuery()) {
+                // Обработка callback от кнопок
+                String callbackData = update.getCallbackQuery().getData();
+                chatId = String.valueOf(update.getCallbackQuery().getMessage().getChatId());
+
+                System.out.println("[BOT] Callback от " + chatId + ": " + callbackData);
+
+                // Создаем Content и передаем в Producer
+                Content content = new Content(false, chatId, callbackData, callbackData, null);
+                responseContents = producer.produce(content);
+
+            } else if (update.hasMessage() && update.getMessage().hasText()) {
+                // Обработка текстового сообщения
+                String messageText = update.getMessage().getText();
+                chatId = String.valueOf(update.getMessage().getChatId());
+
+                System.out.println("[BOT] Сообщение от " + chatId + ": " + messageText);
+
+                // Создаем Content и передаем в Producer
+                Content content = new Content(false, chatId, messageText);
+                responseContents = producer.produce(content);
             }
-            System.out.println("[BOT] ОБРАБОТКА ЗАВЕРШЕНА \n");
+
+            // Отправляем ответные сообщения
+            if (responseContents != null && responseContents.length > 0) {
+                System.out.println("[BOT] Producer вернул " + responseContents.length + " сообщений для отправки");
+
+                SendMessage[] messages = convertToSendMessages(responseContents);
+                for (SendMessage message : messages) {
+                    if (message != null) {
+                        sendMessage(message);
+                    }
+                }
+            } else {
+                System.out.println("[BOT] Нет ответных сообщений для отправки");
+            }
+
+            System.out.println("[BOT] ОБРАБОТКА ЗАВЕРШЕНА\n");
+
         } catch (Exception e) {
             System.err.println("[BOT] Критическая ошибка обработки обновления");
             e.printStackTrace(System.err);
@@ -202,7 +155,155 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     }
 
     /**
-     * Остановка бота
+     * Конвертирует объект Content в SendMessage для отправки через Telegram API.
+     */
+    private SendMessage convertToSendMessage(Content content) {
+        if (!content.isOut()) {
+            return null;
+        }
+
+        System.out.println("[BOT] Конвертация Content в SendMessage");
+        SendMessage.SendMessageBuilder<?, ?> builder = SendMessage.builder()
+                .chatId(content.getChatId());
+
+        if (content.getText() != null && !content.getText().isEmpty()) {
+            builder.text(content.getText());
+        } else {
+            System.out.println("[BOT] Нет текста для отправки");
+            return null;
+        }
+
+        // Добавляем InlineKeyboard если указан тип клавиатуры
+        if (content.hasKeyboard()) {
+            String keyboardType = content.getKeyboardType();
+            System.out.println("[BOT] Добавление Inline клавиатуры типа: " + keyboardType);
+
+            InlineKeyboardMarkup keyboard = keyboardCache.get(keyboardType);
+            if (keyboard != null) {
+                builder.replyMarkup(keyboard);
+            } else {
+                System.out.println("[BOT] Клавиатура типа '" + keyboardType + "' не найдена в кэше");
+            }
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * Создание клавиатуры из одного или двух уровней кнопок.
+     * Кнопки располагаются в зависимости от их количества на каждом уровне.
+     */
+    private InlineKeyboardMarkup createUniversalKeyboard(Map<String, String> firstLevelButtons,
+                                                         Map<String, String> secondLevelButtons) {
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+
+        // Добавляем кнопки первого уровня - все в одном ряду
+        InlineKeyboardRow firstLevelRow = new InlineKeyboardRow();
+        for (Map.Entry<String, String> entry : firstLevelButtons.entrySet()) {
+            InlineKeyboardButton button = InlineKeyboardButton.builder()
+                    .text(entry.getKey())
+                    .callbackData(entry.getValue())
+                    .build();
+            firstLevelRow.add(button);
+        }
+        keyboard.add(firstLevelRow);
+
+        // Добавляем разделитель и кнопки второго уровня (если они есть)
+        if (!secondLevelButtons.isEmpty()) {
+            keyboard.add(new InlineKeyboardRow()); // пустая строка как разделитель
+
+            // Добавляем кнопки второго уровня - все в одном ряду
+            InlineKeyboardRow secondLevelRow = new InlineKeyboardRow();
+            for (Map.Entry<String, String> entry : secondLevelButtons.entrySet()) {
+                InlineKeyboardButton button = InlineKeyboardButton.builder()
+                        .text(entry.getKey())
+                        .callbackData(entry.getValue())
+                        .build();
+                secondLevelRow.add(button);
+            }
+            keyboard.add(secondLevelRow);
+        }
+
+        return InlineKeyboardMarkup.builder()
+                .keyboard(keyboard)
+                .build();
+    }
+
+    /**
+     * Конвертирует массив Content в массив SendMessage.
+     */
+    private SendMessage[] convertToSendMessages(Content[] contents) {
+        if (contents == null) {
+            return new SendMessage[0];
+        }
+
+        List<SendMessage> messages = new ArrayList<>();
+        for (Content content : contents) {
+            SendMessage message = convertToSendMessage(content);
+            if (message != null) {
+                messages.add(message);
+            }
+        }
+        return messages.toArray(new SendMessage[0]);
+    }
+
+    /**
+     * Инициализирует кэш клавиатур для быстрого доступа.
+     */
+    private void initializeKeyboards() {
+        if (producer == null) {
+            System.err.println("[BOT] Producer не установлен, невозможно инициализировать клавиатуры");
+            return;
+        }
+
+        KeyboardService keyboardService = producer.getKeyboardService();
+        if (keyboardService == null) {
+            System.err.println("[BOT] KeyboardService не доступен");
+            return;
+        }
+
+        try {
+            // Основные кнопки меню
+            keyboardCache.put("menu", createUniversalKeyboard(
+                    keyboardService.getMainButtons(),
+                    new HashMap<>()));
+
+            // Кнопки ответов на вопросы
+            keyboardCache.put("test_answer", createUniversalKeyboard(
+                    keyboardService.getTestAnswerButtons(),
+                    keyboardService.getForwardsAndBackwardsQuizButtons()));
+
+            // Кнопки выбора викторины
+            keyboardCache.put("choice_quiz", createUniversalKeyboard(
+                    keyboardService.getChoiceQuiz(),
+                    keyboardService.getForwardsAndBackwardsTopicButtons()));
+
+            // Пред финальные кнопки викторины
+            keyboardCache.put("final_quiz", createUniversalKeyboard(
+                    keyboardService.getFinalQuizButton(),
+                    new HashMap<>()));
+
+            //Кнопка на лидерборде висит после теста
+            keyboardCache.put("go_menu", createUniversalKeyboard(
+                    keyboardService.getGoMenu(),
+                    new HashMap<>()));
+
+            System.out.println("[BOT] Кэш клавиатур инициализирован, создано " + keyboardCache.size() + " клавиатур");
+
+            for (String key : keyboardCache.keySet()) {
+                InlineKeyboardMarkup keyboard = keyboardCache.get(key);
+                int rowCount = keyboard.getKeyboard().size();
+                System.out.println("[BOT] Создана клавиатура: " + key + " (рядов: " + rowCount + ")");
+            }
+
+        } catch (Exception e) {
+            System.err.println("[BOT] Ошибка инициализации клавиатур");
+            e.printStackTrace(System.err);
+        }
+    }
+
+    /**
+     * Останавливает бота и освобождает ресурсы.
      */
     public void stop() {
         System.out.println("[BOT] Остановка бота...");
@@ -219,31 +320,24 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     }
 
     /**
-     * Запускает бота в режиме long polling
+     * Запускает бота в режиме long polling.
      */
     public void start() {
         try {
             System.out.println("[BOT] Запуск бота...");
-
-            // Создаем экземпляр приложения
             botsApplication = new TelegramBotsLongPollingApplication();
-
-            // Регистрируем бота
             botsApplication.registerBot(botToken, this);
             System.out.println("[BOT] Бот зарегистрирован в LongPollingApplication");
 
-            // Регистрируем команды
             registerBotCommands();
             System.out.println("[BOT] Бот успешно запущен и готов к работе");
 
-            // Добавляем хук
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 System.out.println("[BOT] Получен сигнал завершения работы...");
                 stop();
             }));
 
             System.out.println("[BOT] Бот работает в фоновом режиме");
-
         } catch (Exception e) {
             System.err.println("[BOT] Фатальная ошибка запуска бота");
             e.printStackTrace(System.err);

@@ -5,6 +5,7 @@ out/artifacts/first_jar/first.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
 src/main/resources/bot_token.txt
+src/main/resources/open_router_token.txt
 
 ### IntelliJ IDEA ###
 .idea

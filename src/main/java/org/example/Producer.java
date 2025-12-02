@@ -1,23 +1,34 @@
 package org.example;
+
+import org.example.DataMessage.Content;
+import org.example.DataMessage.KeyboardService;
+import org.example.Quiz.*;
+import org.example.TopicSelector.TopicSelector;
+import org.example.GenerationQuiz.CreateQuiz;
+import org.example.OpenRouter.OpenRouterClient;
+import org.example.Tokens.OpenRouterToken;
+
 /**
  * Класс-производитель для обработки пользовательского контента и управления состоянием пользователей.
  * Обрабатывает входящие сообщения и возвращает соответствующий контент для ответа.
+ * Управляет состояниями пользователей, обработкой команд и навигацией по викторине.
  */
 public class Producer {
     private Users users;
-    private final String[] options = {"A", "B", "C", "D"};
+    private final KeyboardService keyboardService;
+    private final CreateQuiz createQuiz;
 
     private static final String HELP_MESSAGE = """
             📚 Помощь по викторине:
 
             🎯 Как играть:
-            • Выберите 'Начать викторину' для стандартной викторины
-            • Или 'Выбрать тему' для выбора конкретной темы
-            • Отвечайте на вопросы, выбирая варианты A, B, C, D или 1, 2, 3, 4
+            • Выберите 'Выбрать тему' для выбора конкретной темы
+            • Или 'Сгенерировать' для генерации уникальной викторины ИИ
+            • Отвечайте на вопросы, выбирая варианты кнопок
+            • Используйте кнопки навигации для перемещения между вопросами
 
             📝 Форматы ответов:
-            • Буквенный: A, B, C, D
-            • Числовой: 1, 2, 3, 4
+            • Кнопки: кнопки под сообщениями
             • Помощь: help
 
             ⚡ Команды:
@@ -27,388 +38,645 @@ public class Producer {
 
             Удачи в викторине! 🎉""";
 
+    private static final String START_MESSAGE = """
+            🧠 *QuizMaster Bot* - Твой умный помощник в мире викторин!
+            
+            ✨ *Что умеет этот бот?*
+            • 🎯 Проводит увлекательные викторины на разные темы
+            • 🤖 Генерирует уникальные викторины с помощью ИИ
+            • 🔄 Навигация между вопросами с сохранением ответов
+            • 🏆 Соревнуйся с друзьями в таблице лидеров
+            
+            🎮 *Как играть?*
+            • Выбирай тему из доступных вариантов ИЛИ создай свою
+            • Отвечай на вопросы, нажимая кнопки A, B, C, D
+            • Перемещайся между вопросами с помощью навигации
+            • Видишь свои ответы рядом с вариантами
+            • Стань лучшим в рейтинге игроков!""";
+
+    private static final String MENU_MESSAGE = """
+            🎪 *Вы находитесь в главном меню!*
+            
+            🚀 *Создай свою уникальную викторину* с помощью нейросети
+            📚 *Или выбери готовые темы* из нашей коллекции
+            
+            🎯 Что будем делать?""";
+
     /**
      * Конструктор по умолчанию.
+     * Инициализирует менеджер пользователей и сервис клавиатур.
      */
     public Producer() {
         this.users = new Users();
+        this.keyboardService = new KeyboardService();
+
+        // Инициализация генератора викторин
+        OpenRouterToken openRouterToken = new OpenRouterToken();
+        OpenRouterClient openRouterClient = new OpenRouterClient(openRouterToken.get());
+        this.createQuiz = new CreateQuiz(openRouterClient);
+
         System.out.println("[PRODUCER] Producer создан, данные пользователей загружены");
     }
 
     /**
      * Устанавливает объект для управления пользователями.
+     * @param users менеджер пользователей
      */
     public void setUsers(Users users) {
         this.users = users;
-        System.out.println("[PRODUCER] Установлен Users manager");
+        System.out.println("[PRODUCER] Установен Users manager");
     }
 
     /**
-     * Возвращает массив сообщений для отправки
+     * Основной метод обработки пользовательского контента.
+     * Определяет состояние пользователя и вызывает соответствующие обработчики.
+     * @param content входящий контент от пользователя
+     * @return массив контента для ответа пользователю
      */
     public Content[] produce(Content content) {
         String chatId = content.getChatId();
-        System.out.println("[PRODUCER] Обработка входящего сообщения");
+        System.out.println("[PRODUCER] Обработка входящего сообщения от " + chatId);
 
         UserData userData = users.getOrCreate(chatId);
         System.out.println("[PRODUCER] Текущее состояние пользователя: " + userData.getState());
 
         Content[] result = processUserMessage(content, chatId, userData);
-
-        users.saveToDisk();
-        System.out.println("[PRODUCER] Данные пользователей сохранены после обработки сообщения");
+        System.out.println("[PRODUCER] Данные пользователей сохранены");
 
         return result;
     }
 
     /**
-     * Обрабатывает сообщение пользователя и возвращает результат
+     * Обрабатывает пользовательское сообщение в зависимости от состояния пользователя.
+     * @param content входящий контент
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
      */
     private Content[] processUserMessage(Content content, String chatId, UserData userData) {
-        // Если пользователь в состоянии ожидания имени для лидерборда
+        String messageText = content.getText();
+
+        // Обработка состояния ожидания имени для лидерборда
         if ("waiting_leaderboard_name".equals(userData.getState())) {
-            String name = content.getText().trim();
-            if (!name.isEmpty() && name.length() <= 20) {
-                users.setLeaderboardName(chatId, name);
-                userData.setState("menu");
-                return new Content[] {
-                        createTextContent(chatId, "✅ Имя \"" + name + "\" успешно установлено!\nТеперь вы отображаетесь в лидерборде!"),
-                        createTextContent(chatId, users.getFormattedLeaderboard()),
-                        createMenuContent(chatId, "Возврат в главное меню:")
-                };
-            } else {
-                return new Content[] {
-                        createTextContent(chatId, "❌ Неверное имя!\nИмя должно быть от 1 до 20 символов.\nПожалуйста, введите ваше имя еще раз:")
-                };
-            }
+            return handleLeaderboardName(chatId, messageText, userData);
         }
 
-        // обработка команд и кнопок на клаве
-        switch (content.getText()) {
-            case "/start":
-                System.out.println("[PRODUCER] Обработка команды /start");
-                return new Content[] { createMenuContent(chatId, "Добро пожаловать в викторину! Выберите действие:") };
-            case "/help":
-            case "Помощь":
-                System.out.println("[PRODUCER] Обработка команды помощи");
-                return new Content[] { createTextContent(chatId, HELP_MESSAGE) };
-            case "/leaderboard":
-                System.out.println("[PRODUCER] Обработка команды лидерборда");
-                String leaderboard = users.getFormattedLeaderboard();
-                return new Content[] { createTextContent(chatId, leaderboard) };
+        // Обработка состояния ожидания темы для генерации
+        if ("waiting_generation_topic".equals(userData.getState())) {
+            return handleGenerationTopic(chatId, messageText, userData);
+        }
 
-            case "Начать викторину":
-                System.out.println("[PRODUCER] Пользователь начал стандартную викторину");
-                startStandardQuiz(chatId);
-                String question = userData.getCurrentQuiz().getCurrentQuestion();
-                userData.setLastQuestion(question);
-                return new Content[] { createTextContent(chatId, question) };
-            case "Выбрать тему":
-                System.out.println("[PRODUCER] Пользователь выбрал режим выбора темы");
-                startTopicSelection(chatId);
-                question = userData.getCurrentQuiz().getCurrentQuestion();
-                userData.setLastQuestion(question);
-                return new Content[] { createTextContent(chatId, question) };
-            case "Начать заново":
-                System.out.println("[PRODUCER] Пользователь начал заново");
-                userData.setCurrentQuiz(null);
-                userData.setLastQuestion(null);
-                return new Content[] { createMenuContent(chatId, "Добро пожаловать в викторину! Выберите действие:") };
-            default:
-                System.out.println("[PRODUCER] Обработка ответа на вопрос викторины");
-                return processQuizAnswer(chatId, content);
+        return handleUserInput(messageText, chatId, userData);
+    }
+
+    /**
+     * Обрабатывает ввод имени для лидерборда.
+     * @param chatId идентификатор чата
+     * @param name введное имя пользователя
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleLeaderboardName(String chatId, String name, UserData userData) {
+        name = name.trim();
+        if (!name.isEmpty() && name.length() <= 20) {
+            users.setLeaderboardName(chatId, name);
+            userData.setState("menu");
+
+            return new Content[] {
+                    new Content(true, chatId, "✅ Имя \"" + name + "\" успешно установлено!\nТеперь вы отображаетесь в лидерборде!"),
+                    new Content(true, chatId, users.getFormattedLeaderboard(), "go_menu"),
+            };
+        } else {
+            return new Content[] {
+                    new Content(true, chatId, "❌ Неверное имя!\nИмя должно быть от 1 до 20 символов.\nПожалуйста, введите ваше имя еще раз:")
+            };
         }
     }
 
     /**
-     * Возвращает массив сообщений для ответа на вопрос викторины
+     * Обрабатывает ввод темы для генерации викторины
      */
-    private Content[] processQuizAnswer(String chatId, Content content) {
-        UserData userData = users.get(chatId);
-        Quiz quiz = userData.getCurrentQuiz();
+    private Content[] handleGenerationTopic(String chatId, String topic, UserData userData) {
+        topic = topic.trim();
 
-        if (quiz == null) {
-            System.out.println("[PRODUCER] Нет активной викторины для пользователя " + chatId);
-            return new Content[] { createMenuContent(chatId, "Викторина не активна. Начните викторину:") };
-        }
-
-        String userState = userData.getState();
-        System.out.println("[PRODUCER] Обработка ответа в состоянии: " + userState);
-
-        if (content.getText().equalsIgnoreCase("help")) {
-            System.out.println("[PRODUCER] Пользователь запросил помощь");
-            String currentQuestion = userData.getLastQuestion();
-            if (currentQuestion == null) {
-                currentQuestion = quiz.getCurrentQuestion();
-            }
-            return new Content[] { createTextContent(chatId, HELP_MESSAGE + "\n\n" + currentQuestion) };
-        }
-
-        int answerIndex = convertAnswerToIndex(content.getText());
-        System.out.println("[PRODUCER] Ответ пользователя '" + content.getText() + "' преобразован в индекс: " + answerIndex);
-
-        if (answerIndex == -1) {
-            System.out.println("[PRODUCER] Невалидный ответ от пользователя");
-            userData.setState("waiting_correct_input");
-            String currentQuestion = userData.getLastQuestion();
-            if (currentQuestion == null) {
-                currentQuestion = quiz.getCurrentQuestion();
-            }
-            return createInvalidAnswerResponse(chatId, content.getText(), currentQuestion);
-        }
-
-        userData.setState(userState.equals("topic_selection") ? "topic_selection" : "quiz");
-
-        if ("topic_selection".equals(userState)) {
-            System.out.println("[PRODUCER] Обработка выбора темы с индексом: " + answerIndex);
-            return new Content[] { handleTopicSelection(chatId, answerIndex) };
-        }
-
-        System.out.println("[PRODUCER] Обработка ответа в викторине");
-        return handleQuizAnswer(chatId, answerIndex, quiz);
-    }
-
-    /**
-     * Обновляет счет пользователя (добавляет к общей сумме)
-     */
-    private void updateUserScore(String chatId, int additionalScore) {
-        UserData userData = users.get(chatId);
-        userData.addToScore(additionalScore);
-        System.out.println("[PRODUCER] Обновлен счет пользователя " + chatId + ": " + userData.getScore() + " (+" + additionalScore + ")");
-    }
-
-    /**
-     * Сохраняет результат по теме
-     */
-    private void saveTopicResult(String chatId, String topic, int score) {
-        UserData userData = users.get(chatId);
-        userData.addTopicScore(topic, score);
-        System.out.println("[PRODUCER] Сохранен результат по теме '" + topic + "' для пользователя " + chatId + ": " + score);
-    }
-
-    /**
-     * запускает стандартную викторину для пользователя.
-     */
-    private void startStandardQuiz(String chatId) {
-        System.out.println("[PRODUCER] Запуск стандартной викторины для " + chatId);
-        Memory memory = new Memory();
-        memory.read();
-
-        if (!memory.hasData() || memory.getData().length == 0) {
-            System.err.println("[PRODUCER] Ошибка: нет данных для викторины");
-            return;
-        }
-
-        String firstTopic = memory.getData()[0].getOptions()[0];
-        memory.reConnect("/" + firstTopic + ".json");
-        memory.read();
-
-        UserData userData = users.get(chatId);
-        userData.setCurrentQuiz(new Quiz(memory, false));
-        userData.setState("quiz");
-        System.out.println("[PRODUCER] Пользователь " + chatId + " начал викторину по теме: " + firstTopic);
-    }
-
-    /**
-     * запускает выбор темы для пользователя.
-     */
-    private void startTopicSelection(String chatId) {
-        System.out.println("[PRODUCER] Запуск выбора темы для " + chatId);
-        Memory memory = new Memory();
-        memory.read();
-
-        if (!memory.hasData() || memory.getData().length == 0) {
-            System.err.println("[PRODUCER] Ошибка: нет данных для выбора темы");
-            return;
-        }
-
-        UserData userData = users.get(chatId);
-        userData.setCurrentQuiz(new Quiz(memory, true));
-        userData.setState("topic_selection");
-        System.out.println("[PRODUCER] Пользователь " + chatId + " начал выбор темы, доступно тем: " + memory.getData().length);
-    }
-
-    /**
-     * преобразует текстовый ответ в индекс варианта.
-     */
-    private int convertAnswerToIndex(String answer) {
-        if (answer == null || answer.isEmpty()) {
-            return -1;
-        }
-
-        answer = answer.toUpperCase().trim();
-
-        for (int i = 0; i < options.length; i++) {
-            if (options[i].equals(answer)) {
-                return i;
-            }
+        if (topic.isEmpty() || topic.length() > 100) {
+            return new Content[] {
+                    new Content(true, chatId, """
+                            ❌ Неверная тема!
+                            Тема должна быть от 1 до 100 символов.
+                            Пожалуйста, введите тему еще раз:""")
+            };
         }
 
         try {
-            int number = Integer.parseInt(answer);
-            if (number >= 1 && number <= options.length) {
-                return number - 1;
-            }
-        } catch (NumberFormatException e) {
-            // Не число
-        }
+            System.out.println("[PRODUCER] Генерация викторины по теме: " + topic);
 
-        return -1;
+            // Генерируем викторину с помощью ИИ
+            Memory generatedMemory = createQuiz.generateQuiz(topic);
+
+            // Создаем квиз из сгенерированной памяти
+            Quiz generatedQuiz = new Quiz(generatedMemory);
+            userData.setCurrentQuiz(generatedQuiz);
+            userData.setState("quiz");
+
+            String firstQuestion = generatedQuiz.getCurrentQuestionText();
+
+            return new Content[] {
+                    new Content(true, chatId, "✅ *Викторина успешно создана!*\n\n" +
+                            "🎯 Тема: " + topic + "\n" +
+                            "📊 Вопросов: " + generatedQuiz.getTotalQuestions() + "\n\n" +
+                            "Приятной игры! 🎮"),
+                    new Content(true, chatId, firstQuestion, null, "test_answer")
+            };
+
+        } catch (Exception e) {
+            System.err.println("[PRODUCER] Ошибка генерации викторины: " + e.getMessage());
+            userData.setState("menu");
+
+            return new Content[] {
+                    new Content(true, chatId, "❌ *Ошибка генерации викторины*\n\n" +
+                            "Не удалось создать викторину по теме: " + topic + "\n" +
+                            "Попробуйте другую тему или используйте готовые викторины.", null, "menu")
+            };
+        }
     }
 
     /**
-     * создает ответ для невалидного формата (два сообщения)
+     * Обрабатывает пользовательский ввод (команды и текстовые сообщения).
+     * @param inputText текст ввода пользователя
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
      */
-    private Content[] createInvalidAnswerResponse(String chatId, String userAnswer, String currentQuestion) {
-        System.out.println("[PRODUCER] Создание ответа для невалидного ввода");
-        Content errorMessage = new Content(true, chatId,
-                "❌ Неверный ответ: '" + userAnswer + "'\n\n" +
-                        "📝 Пожалуйста, введите ответ еще раз используя: A, B, C, D или 1, 2, 3, 4");
-
-        Content questionMessage = new Content(true, chatId, currentQuestion);
-
-        return new Content[] { errorMessage, questionMessage };
-    }
-
-    /**
-     * обрабатывает выбор темы пользователем
-     */
-    private Content handleTopicSelection(String chatId, int topicIndex) {
-        System.out.println("[PRODUCER] Обработка выбора темы с индексом " + topicIndex);
-        UserData userData = users.get(chatId);
-        Quiz currentQuiz = userData.getCurrentQuiz();
-
-        if (currentQuiz == null || !currentQuiz.isChooseMode()) {
-            System.err.println("[PRODUCER] Ошибка: нет активного режима выбора темы");
-            return createTextContent(chatId, "❌ Ошибка выбора темы. Попробуйте снова.");
-        }
-
-        Memory topicMemory = currentQuiz.getMemory();
-        String[] availableTopics = topicMemory.getData()[0].getOptions();
-
-        if (topicIndex < 0 || topicIndex >= availableTopics.length) {
-            System.err.println("[PRODUCER] Неверный индекс темы: " + topicIndex);
-            return createTextContent(chatId, "❌ Неверный выбор темы. Попробуйте снова.");
-        }
-
-        String selectedTopic = availableTopics[topicIndex];
-        System.out.println("[PRODUCER] Выбрана тема: " + selectedTopic);
-
-        // Создаем новую память для выбранной темы
-        Memory newTopicMemory = new Memory();
-        newTopicMemory.reConnect("/" + selectedTopic + ".json");
-        newTopicMemory.read();
-
-        if (!newTopicMemory.hasData()) {
-            System.err.println("[PRODUCER] Ошибка: не удалось загрузить данные по теме: " + selectedTopic);
-            return createTextContent(chatId, "❌ Ошибка загрузки темы '" + selectedTopic + "'. Попробуйте другую тему.");
-        }
-
-        Quiz newQuiz = new Quiz(newTopicMemory, false);
-        userData.setCurrentQuiz(newQuiz);
-        userData.setState("quiz");
-
-        String question = newQuiz.getCurrentQuestion();
-        userData.setLastQuestion(question);
-
-        Content result = new Content(true, chatId,
-                "🎯 Выбрана тема: " + selectedTopic + "\n\n" + question);
-
-        System.out.println("[PRODUCER] Пользователь " + chatId + " выбрал тему: " + selectedTopic +
-                ", вопросов: " + newTopicMemory.getData().length);
-
-        return result;
-    }
-
-    /**
-     * возвращает ТРИ отдельных сообщения: результат ответа, итоги викторины и предложение для лидерборда
-     */
-    private Content[] handleQuizAnswer(String chatId, int answerIndex, Quiz quiz) {
-        System.out.println("[PRODUCER] Обработка ответа викторины с индексом " + answerIndex);
-        UserData userData = users.get(chatId);
-
-        String answerResult = quiz.processAnswer(answerIndex);
-
-        if (answerResult.equals("Верно!")) {
-            updateUserScore(chatId, 1);
-        }
-
-        Content resultMessage = createTextContent(chatId, answerResult);
-
-        if (!quiz.isFinished()) {
-            System.out.println("[PRODUCER] Викторина продолжается, отправляем следующий вопрос");
-            String nextQuestion = quiz.getCurrentQuestion();
-            userData.setLastQuestion(nextQuestion);
-            Content nextQuestionMessage = createTextContent(chatId, nextQuestion);
-            return new Content[] { resultMessage, nextQuestionMessage };
+    private Content[] handleUserInput(String inputText, String chatId, UserData userData) {
+        if (inputText.startsWith("/")) {
+            return handleCommand(inputText, chatId, userData);
+        } else if (isButtonCallback(inputText)) {
+            return handleButtonCallback(inputText, chatId, userData);
         } else {
-            System.out.println("[PRODUCER] Викторина завершена, показываем результаты");
+            return handleTextMessage(inputText, chatId, userData);
+        }
+    }
 
-            int totalScore = userData.getScore();
-            int quizScore = quiz.getScore();
+    /**
+     * Проверяет, является ли ввод callback от кнопки.
+     * @param inputText текст ввода
+     * @return true если это callback от кнопки, иначе false
+     */
+    private boolean isButtonCallback(String inputText) {
+        return inputText.endsWith("_button");
+    }
 
-            // Сохраняем результат этой викторины
-            String topicName = "quiz_" + System.currentTimeMillis();
-            saveTopicResult(chatId, topicName, quizScore);
+    /**
+     * Обрабатывает callback от кнопок.
+     * @param callbackData данные callback
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleButtonCallback(String callbackData, String chatId, UserData userData) {
+        System.out.println("[PRODUCER] Обработка callback: " + callbackData);
 
-            // Сообщение 1: Результат последнего ответа
-            Content finalResultMessage = createTextContent(chatId, answerResult);
+        // Навигационные кнопки в выборе темы
+        switch (callbackData) {
+            case "topic_forwards_button", "topic_backwards_button" -> {
+                return handleTopicNavigationButtons(callbackData, chatId, userData);
+            }
 
-            // Сообщение 2: Итоги викторины
-            Content quizResultsMessage = createTextContent(chatId,
-                    quiz.getResults() +
-                            "\nВаш общий счет: " + totalScore + " баллов");
 
-            if (users.canEnterLeaderboard(totalScore) && userData.getLeaderboardName() == null) {
-                // Сообщение 3: Поздравление и предложение ввести имя для лидерборда
-                Content leaderboardOfferMessage = createTextContent(chatId,
-                        "🎉 **ПОЗДРАВЛЯЕМ!** 🎉\n" +
-                                "Вы набрали " + quizScore + " баллов в этой викторине!\n" +
-                                "Ваш общий счет: " + totalScore + " баллов\n\n" +
-                                "Вы попали в ТОП-5 лидеров!\n" +
-                                "Для отображения в лидерборде введите ваше имя (имя можно ввести один раз, выбирайте с умом):");
+            // Навигационные кнопки в викторине
+            case "quiz_forwards_button", "quiz_backwards_button" -> {
+                return handleQuizNavigationButtons(callbackData, chatId, userData);
+            }
 
-                userData.setState("waiting_leaderboard_name");
 
-                return new Content[] {
-                        finalResultMessage,
-                        quizResultsMessage,
-                        leaderboardOfferMessage
-                };
-            } else {
-                // Сообщение 3: Меню действий
-                Content menuMessage = new Content(true, chatId,
-                        "Возврат в главное меню:",
-                        new String[]{"Начать заново", "Выбрать тему", "В меню"});
+            // Кнопки ответов
+            case "A_button", "B_button", "C_button", "D_button" -> {
+                return handleAnswerButtons(callbackData, chatId, userData);
+            }
 
-                userData.setCurrentQuiz(null);
-                userData.setLastQuestion(null);
-                userData.setState("menu");
 
-                return new Content[] {
-                        finalResultMessage,
-                        quizResultsMessage,
-                        menuMessage
-                };
+            // Кнопка перехода к первому вопросу
+            case "at_the_top_button" -> {
+                return handleAtTheTopButton(chatId, userData);
+            }
+
+
+            // Остальные кнопки
+            default -> {
+                switch (callbackData) {
+                    case "quiz_button":
+                        return startTopicSelection(chatId, userData);
+
+                    case "play_button":
+                        return startQuizWithSelectedTopic(chatId, userData);
+
+                    case "menu_button":
+                        userData.setState("menu");
+                        userData.setCurrentQuiz(null);
+                        userData.setTopicSelector(null);
+                        return new Content[]{
+                                new Content(true, chatId, MENU_MESSAGE, null, "menu")
+                        };
+                    case "generation_button":
+                        return generationQuiz(chatId, userData);
+
+                    case "end_quiz_button":
+                        return handleQuizCompletion(chatId, userData);
+
+                    default:
+                        System.out.println("[PRODUCER] Неизвестный callback: " + callbackData);
+                        return new Content[]{
+                                new Content(true, chatId, "Неизвестное действие", null, "menu")
+                        };
+                }
             }
         }
     }
 
     /**
-     * создает контент для главного меню.
+     * Обрабатывает генерацию викторины через ИИ
      */
-    Content createMenuContent(String chatId, String message) {
-        System.out.println("[PRODUCER] Создание меню для пользователя");
-        Content result = new Content(true, chatId, message,
-                new String[]{"Начать викторину", "Выбрать тему", "Помощь"});
-        users.get(chatId).setState("menu");
-        return result;
+    private Content[] generationQuiz(String chatId, UserData userData) {
+        System.out.println("[PRODUCER] Запуск генерации викторины для " + chatId);
+
+        // Устанавливаем состояние ожидания темы
+        userData.setState("waiting_generation_topic");
+
+        return new Content[] {
+                new Content(true, chatId, """
+                        🚀 *Генерация викторины с помощью ИИ*
+                        
+                        Введите тему для викторины (например: "Программирование", "История", "Наука"):
+                        
+                        📝 *Рекомендации:*
+                        • Будьте конкретны в выборе темы
+                        • Избегайте слишком общих формулировок
+                        • Примеры хороших тем: "Java ООП", "Великие открытия\"""")
+        };
     }
 
     /**
-     * создает простое текстовое сообщение
+     * Обрабатывает кнопку перехода к первому вопросу
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
      */
-    Content createTextContent(String chatId, String text) {
-        return new Content(true, chatId, text);
+    private Content[] handleAtTheTopButton(String chatId, UserData userData) {
+        Quiz quiz = userData.getCurrentQuiz();
+        if (quiz == null) {
+            return new Content[] {
+                    new Content(true, chatId, "❌ Викторина не активна", null, "menu")
+            };
+        }
+
+        // Переходим к первому вопросу с сохраненными ответами
+        quiz.goToFirstQuestion();
+        String firstQuestion = quiz.getCurrentQuestionText();
+        userData.setCurrentQuiz(quiz);
+
+        return new Content[] {
+                new Content(true, chatId, firstQuestion, null, "test_answer")
+        };
+    }
+
+    /**
+     * Обрабатывает навигационные кнопки в выборе темы
+     * @param callbackData данные callback
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleTopicNavigationButtons(String callbackData, String chatId, UserData userData) {
+        if (userData.getTopicSelector() != null && "topic_selection".equals(userData.getState())) {
+            if (callbackData.equals("topic_forwards_button")) {
+                userData.getTopicSelector().next();
+            } else {
+                userData.getTopicSelector().previous();
+            }
+            String displayMessage = userData.getTopicSelector().getDisplayMessage();
+            return new Content[] {
+                    new Content(true, chatId, displayMessage, null, "choice_quiz")
+            };
+        }
+        return new Content[] {
+                new Content(true, chatId, "❌ Навигация недоступна", null, "menu")
+        };
+    }
+
+    /**
+     * Обрабатывает навигационные кнопки в викторине
+     * @param callbackData данные callback
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleQuizNavigationButtons(String callbackData, String chatId, UserData userData) {
+        Quiz quiz = userData.getCurrentQuiz();
+        if (quiz == null) {
+            return new Content[] {
+                    new Content(true, chatId, "❌ Викторина не активна", null, "menu")
+            };
+        }
+
+        // Выполняем навигацию
+        if (callbackData.equals("quiz_forwards_button")) {
+            quiz.nextQuestion();
+        } else {
+            quiz.previousQuestion();
+        }
+
+        String message;
+        String keyboardType;
+
+        if (quiz.isOnFinalMessage()) {
+            message = quiz.getFinalMessage();
+            keyboardType = "final_quiz";
+        } else {
+            message = quiz.getCurrentQuestionText();
+            keyboardType = "test_answer";
+        }
+
+        userData.setCurrentQuiz(quiz);
+
+        return new Content[] {
+                new Content(true, chatId, message, null, keyboardType)
+        };
+    }
+
+    /**
+     * Обрабатывает кнопки ответов (A, B, C, D) с обновлением сообщения
+     * @param callbackData данные callback
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleAnswerButtons(String callbackData, String chatId, UserData userData) {
+        if (userData.getCurrentQuiz() != null) {
+            String cleanAnswer = callbackData.replace("_button", "");
+            return processQuizAnswerWithUpdate(cleanAnswer, chatId, userData);
+        } else {
+            return new Content[] {
+                    new Content(true, chatId, "❌ Викторина не активна. Начните викторину сначала.", null, "menu")
+            };
+        }
+    }
+
+    /**
+     * Обрабатывает ответ в викторине с обновлением сообщения
+     * @param answerText текст ответа
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] processQuizAnswerWithUpdate(String answerText, String chatId, UserData userData) {
+        Quiz quiz = userData.getCurrentQuiz();
+
+        if (quiz == null) {
+            return new Content[] {
+                    new Content(true, chatId, "❌ Викторина не активна. Используйте /start для начала викторины.")
+            };
+        }
+
+        String cleanAnswer = answerText.replace("_button", "");
+        String resultMessage = quiz.processAnswer(cleanAnswer);
+
+        // Проверяем, был ли это ответ на последний вопрос
+        int currentIndex = quiz.getCurrentQuestionIndex();
+        int totalQuestions = quiz.getTotalQuestions();
+
+        String nextMessage;
+        String keyboardType;
+
+        if (currentIndex == totalQuestions - 1) {
+            // Это был ответ на последний вопрос - переходим к финальному сообщению
+            quiz.goToFinalMessage();
+            nextMessage = quiz.getFinalMessage();
+            keyboardType = "final_quiz";
+        } else {
+            // Показываем обычный вопрос
+            nextMessage = quiz.getCurrentQuestionText();
+            keyboardType = "test_answer";
+        }
+
+        userData.setCurrentQuiz(quiz);
+
+        return new Content[] {
+                new Content(true, chatId, resultMessage),
+                new Content(true, chatId, nextMessage, null, keyboardType)
+        };
+    }
+
+    /**
+     * Обрабатывает команды пользователя
+     * @param command текст команды
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleCommand(String command, String chatId, UserData userData) {
+        return switch (command) {
+            case "/start" -> handleStartCommand(chatId, userData);
+            case "/help" -> handleHelpCommand(chatId);
+            case "/leaderboard" -> handleLeaderboardCommand(chatId);
+            case "/menu" -> handleMenuCommand(chatId, userData);
+            default -> {
+                System.out.println("[PRODUCER] Неизвестная команда: " + command);
+                yield new Content[]{
+                        new Content(true, chatId, "Неизвестная команда. Используйте /help для списка команд.")
+                };
+            }
+        };
+    }
+
+    /**
+     * Обрабатывает текстовые сообщения от пользователя
+     * @param messageText текст сообщения
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleTextMessage(String messageText, String chatId, UserData userData) {
+        if (userData.getCurrentQuiz() != null) {
+            return processQuizAnswerWithUpdate(messageText, chatId, userData);
+        }
+
+        return new Content[] {
+                new Content(true, chatId, "Викторина не активна. Используйте команды:\n/start - начать викторину\n/help - помощь")
+        };
+    }
+
+    /**
+     * Обрабатывает команду /start
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleStartCommand(String chatId, UserData userData) {
+        System.out.println("[PRODUCER] Обработка команды /start");
+        userData.setState("menu");
+        return new Content[] {
+                new Content(true, chatId, START_MESSAGE),
+                new Content(true, chatId, MENU_MESSAGE, null, "menu")
+        };
+    }
+
+    /**
+     * Обрабатывает команду /help
+     * @param chatId идентификатор чата
+     * @return массив контента для ответа
+     */
+    private Content[] handleHelpCommand(String chatId) {
+        System.out.println("[PRODUCER] Обработка команды помощи");
+        return new Content[] { new Content(true, chatId, HELP_MESSAGE) };
+    }
+
+    /**
+     * Обрабатывает команду /leaderboard
+     * @param chatId идентификатор чата
+     * @return массив контента для ответа
+     */
+    private Content[] handleLeaderboardCommand(String chatId) {
+        System.out.println("[PRODUCER] Обработка команды лидерборда");
+        String leaderboard = users.getFormattedLeaderboard();
+        return new Content[] { new Content(true, chatId, leaderboard) };
+    }
+
+    /**
+     * Обрабатывает команду /menu
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleMenuCommand(String chatId, UserData userData) {
+        System.out.println("[PRODUCER] Обработка команды меню");
+        userData.setState("menu");
+        return new Content[] {
+                new Content(true, chatId, MENU_MESSAGE, null, "menu")
+        };
+    }
+
+    /**
+     * Запускает выбор темы
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] startTopicSelection(String chatId, UserData userData) {
+        System.out.println("[PRODUCER] Запуск выбора темы для " + chatId);
+
+        Memory memory = new Memory();
+        memory.reConnect("/choose.json");
+        memory.read();
+
+        if (!memory.hasData() || memory.getData().length == 0) {
+            System.err.println("[PRODUCER] Ошибка: choose.json не загружен или пуст");
+            return new Content[] {
+                    new Content(true, chatId, "❌ Нет доступных тем для викторины", null, "menu")
+            };
+        }
+
+        TopicSelector topicSelector = new TopicSelector();
+        topicSelector.initializeFromMemory(memory);
+        userData.setTopicSelector(topicSelector);
+        userData.setState("topic_selection");
+
+        String displayMessage = topicSelector.getDisplayMessage();
+        System.out.println("[PRODUCER] Пользователь " + chatId + " начал выбор темы, доступно тем: " + topicSelector.getTopicCount());
+
+        return new Content[] {
+                new Content(true, chatId, displayMessage, null, "choice_quiz")
+        };
+    }
+
+    /**
+     * Запускает викторину с выбранной темой
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] startQuizWithSelectedTopic(String chatId, UserData userData) {
+        if (userData.getTopicSelector() == null) {
+            return new Content[] {
+                    new Content(true, chatId, "❌ Тема не выбрана", null, "menu")
+            };
+        }
+
+        String selectedTopicFileName = userData.getTopicSelector().getCurrentTopic();
+        String displayMessage = userData.getTopicSelector().getDisplayMessage();
+        String[] lines = displayMessage.split("\n");
+        String selectedTopicDisplayName = lines.length >= 3 ? lines[2].trim() : selectedTopicFileName;
+
+        System.out.println("[PRODUCER] Запуск викторины по теме: " + selectedTopicFileName);
+
+        Memory memory = new Memory();
+        memory.reConnect("/" + selectedTopicFileName + ".json");
+        memory.read();
+
+        if (!memory.hasData() || memory.getData().length == 0) {
+            return new Content[] {
+                    new Content(true, chatId, "❌ Ошибка загрузки темы: " + selectedTopicDisplayName, null, "menu")
+            };
+        }
+
+        userData.setCurrentQuiz(new Quiz(memory));
+        userData.setState("quiz");
+        userData.setTopicSelector(null);
+
+        String firstQuestion = userData.getCurrentQuiz().getCurrentQuestionText();
+
+        return new Content[] {
+                new Content(true, chatId, "🎯 Выбрана тема: " + selectedTopicDisplayName),
+                new Content(true, chatId, firstQuestion, null, "test_answer")
+        };
+    }
+
+    /**
+     * Завершает викторину и показывает результаты
+     * @param chatId идентификатор чата
+     * @param userData данные пользователя
+     * @return массив контента для ответа
+     */
+    private Content[] handleQuizCompletion(String chatId, UserData userData) {
+        Quiz quiz = userData.getCurrentQuiz();
+        if (quiz == null) {
+            return new Content[] {
+                    new Content(true, chatId, "❌ Викторина не активна", null, "menu")
+            };
+        }
+        String results = quiz.getResults();
+        users.updateUserScore(chatId, quiz.getScore());
+
+        // Проверяем, установлено ли имя для лидерборда
+        boolean hasLeaderboardName = userData.getLeaderboardName() != null && !userData.getLeaderboardName().isEmpty();
+
+        userData.setCurrentQuiz(null);
+
+        if (!hasLeaderboardName) {
+            // Если имя не установлено - предлагаем добавиться в лидерборд
+            userData.setState("waiting_leaderboard_name");
+            return new Content[] {
+                    new Content(true, chatId, results),
+                    new Content(true, chatId, """
+                            🏆 Поздравляем с завершением викторины!
+                            
+                            Чтобы попасть в таблицу лидеров, введите ваше имя (до 20 символов):""")
+            };
+        } else {
+            // Если имя уже установлено - просто показываем результаты и лидерборд
+            userData.setState("menu");
+            return new Content[] {
+                    new Content(true, chatId, results),
+                    new Content(true, chatId, users.getFormattedLeaderboard(), "go_menu"),
+            };
+        }
+    }
+
+    /**
+     * Получает сервис клавиатур
+     * @return сервис клавиатур
+     */
+    public KeyboardService getKeyboardService() {
+        return keyboardService;
     }
 }

@@ -1,5 +1,8 @@
 package org.example;
 
+import org.example.Quiz.Users;
+import org.example.Tokens.Token;
+
 /**
  * Главный класс приложения для запуска телеграм бота викторины.
  */
@@ -11,7 +14,7 @@ public class Main {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Token token = new Token(); // теперь токен загружается в конструкторе
+        Token token = new Token();
 
         if (!token.isValid()) {
             System.err.println("Ошибка: Токен бота не найден!");
@@ -21,7 +24,7 @@ public class Main {
 
         String botToken = token.get();
         Bot bot = new Bot(botToken);
-        bot.setProduser(producer);
+        bot.setProducer(producer);
 
         System.out.println("Бот инициализирован, запуск...");
         bot.start();

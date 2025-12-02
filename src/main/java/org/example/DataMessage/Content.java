@@ -1,15 +1,15 @@
-package org.example;
+package org.example.DataMessage;
 
 /**
  * Класс для хранения и передачи контента между компонентами системы.
- * Содержит информацию о сообщении, пользователе и параметрах ответа.
+ * Содержит информацию о сообщении, пользователе и параметрах ответа, и кнопках.
  */
 public class Content {
-    private final boolean out;      //ТЕПЕРЬ ФАЙНАЛ
-    private final String chatId;    //ТЕПЕРЬ ФАЙНАЛ
-    private final String text;      //ТЕПЕРЬ ФАЙНАЛ
-    private final String userClick; //ТЕПЕРЬ ФАЙНАЛ
-    private final String[] options; //ТЕПЕРЬ ФАЙНАЛ
+    private final boolean out;
+    private final String chatId;
+    private final String text;
+    private final String userClick;
+    private final String keyboardType;
 
     /**
      * Основной конструктор для создания полного контента.
@@ -18,21 +18,21 @@ public class Content {
      * @param chatId идентификатор чата
      * @param text текст сообщения
      * @param userClick данные callback
-     * @param options варианты ответов (кнопки)
+     * @param keyboardType тип клавиатуры
      */
-    public Content(boolean out, String chatId, String text, String userClick, String[] options) {
+    public Content(boolean out, String chatId, String text, String userClick, String keyboardType) {
         this.out = out;
         this.chatId = chatId;
         this.text = text;
         this.userClick = userClick;
-        this.options = options != null ? options.clone() : null;
+        this.keyboardType = keyboardType;
     }
 
     /**
-     * Конструктор для текстового сообщения с кнопками.
+     * Конструктор для текстового сообщения с клавиатурой.
      */
-    public Content(boolean out, String chatId, String text, String[] options) {
-        this(out, chatId, text, null, options);
+    public Content(boolean out, String chatId, String text, String keyboardType) {
+        this(out, chatId, text, null, keyboardType);
     }
 
     /**
@@ -66,9 +66,16 @@ public class Content {
     }
 
     /**
-     * Возвращает копию массива опций
+     * Возвращает тип клавиатуры
      */
-    public String[] getOptions() {
-        return options != null ? options.clone() : null;
+    public String getKeyboardType() {
+        return keyboardType;
+    }
+
+    /**
+     * Проверяет, есть ли клавиатура в сообщении
+     */
+    public boolean hasKeyboard() {
+        return keyboardType != null && !keyboardType.isEmpty();
     }
 }
