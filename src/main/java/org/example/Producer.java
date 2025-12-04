@@ -441,16 +441,11 @@ public class Producer {
         String cleanAnswer = answerText.replace("_button", "");
         String resultMessage = quiz.processAnswer(cleanAnswer);
 
-        // Проверяем, был ли это ответ на последний вопрос
-        int currentIndex = quiz.getCurrentQuestionIndex();
-        int totalQuestions = quiz.getTotalQuestions();
-
         String nextMessage;
         String keyboardType;
 
-        if (currentIndex == totalQuestions - 1) {
+        if (quiz.isOnFinalMessage()) {
             // Это был ответ на последний вопрос - переходим к финальному сообщению
-            quiz.goToFinalMessage();
             nextMessage = quiz.getFinalMessage();
             keyboardType = "final_quiz";
         } else {

@@ -146,6 +146,7 @@ public class Quiz {
     /**
      * Обрабатывает ответ пользователя на текущий вопрос.
      * Обновляет счетчик очков в зависимости от правильности ответа.
+     * Автоматически переходит к следующему вопросу после ответа.
      * @param answerText текст ответа пользователя (A, B, C, D)
      * @return сообщение о результате обработки ответа
      */
@@ -163,6 +164,7 @@ public class Quiz {
         String result;
         int answerIndex = convertAnswerToIndex(answerText);
 
+        //  ВНИМАНИЕ: специально оставлено уведомнелине об ответе пользователя
         if (!answerText.equals(previousAnswer)) {
             if (answerIndex != -1 && currentDataQuestion.validAnswer(answerIndex)) {
                 if (previousAnswer == null || !currentDataQuestion.validAnswer(convertAnswerToIndex(previousAnswer))) {
@@ -179,6 +181,17 @@ public class Quiz {
             }
         } else {
             result = "ℹ️ Вы уже выбрали этот ответ";
+        }
+
+        // Автоматически переходим к следующему вопросу
+        // Но только если это не был повторный выбор того же ответа
+        if (!answerText.equals(previousAnswer) && currentQuestionIndex < memory.getData().length) {
+            if (currentQuestionIndex == memory.getData().length - 1) {
+                // Если это был последний вопрос, переходим к финальному сообщению
+                currentQuestionIndex = memory.getData().length;
+            } else {
+                currentQuestionIndex++;
+            }
         }
 
         return result;
