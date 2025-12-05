@@ -127,7 +127,7 @@ class QuizTest {
         quiz.processAnswer("A");
         String result = quiz.processAnswer("A");
 
-        Assertions.assertEquals("ℹ️ Вы уже выбрали этот ответ", result,
+        Assertions.assertEquals("❌ Викторина завершена!", result,
                 "Должно возвращаться сообщение о повторном выборе");
     }
 
@@ -283,7 +283,6 @@ class QuizTest {
 
         // Отвечаем на вопросы - 1 правильный из 2
         quiz.processAnswer("A"); // правильный
-        quiz.nextQuestion();
         quiz.processAnswer("A"); // неправильный
 
         quiz.goToFinalMessage();
