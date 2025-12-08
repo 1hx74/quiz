@@ -3,10 +3,11 @@ package org.example;
 import org.example.DataMessage.Content;
 import org.example.DataMessage.KeyboardService;
 import org.example.Quiz.*;
+import org.example.Tokens.Tokens;
 import org.example.TopicSelector.TopicSelector;
 import org.example.GenerationQuiz.CreateQuiz;
 import org.example.OpenRouter.OpenRouterClient;
-import org.example.Tokens.OpenRouterToken;
+import org.example.Tokens.Tokens;
 
 /**
  * Класс-производитель для обработки пользовательского контента и управления состоянием пользователей.
@@ -71,8 +72,8 @@ public class Producer {
         this.keyboardService = new KeyboardService();
 
         // Инициализация генератора викторин
-        OpenRouterToken openRouterToken = new OpenRouterToken();
-        OpenRouterClient openRouterClient = new OpenRouterClient(openRouterToken.get());
+        Tokens OpenRouterToken= new Tokens();
+        OpenRouterClient openRouterClient = new OpenRouterClient(OpenRouterToken.getOpenRouterToken());
         this.createQuiz = new CreateQuiz(openRouterClient);
 
         System.out.println("[PRODUCER] Producer создан, данные пользователей загружены");

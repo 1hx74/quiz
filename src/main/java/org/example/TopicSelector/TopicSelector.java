@@ -3,6 +3,7 @@ package org.example.TopicSelector;
 import org.example.Quiz.DataQuestion;
 import org.example.Quiz.Memory;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,18 +24,24 @@ public class TopicSelector {
      */
     public void initializeFromMemory(Memory memory) {
         topics.clear();
-        if (memory.hasData() && memory.getData().length > 0) {
-            DataQuestion chooseDataQuestion = memory.getData()[0];
-            String[] options = chooseDataQuestion.getOptions();
 
+
+        if (memory.hasData() && memory.getData().length > 0) {
+            DataQuestion chooseDataQuestion = new DataQuestion(
+                     memory.getData()[0].getQuestion()
+                    ,memory.getData()[0].getOptions()
+                    ,memory.getData()[0].getAnswer());
+            String[] options = chooseDataQuestion.getOptions();
+            System.out.println("[TOPIC_SELECTOR]Тема №1 "+ options[0]);
             for (String topicFileName : options) {
-                String displayName = getDisplayName(topicFileName);
-                topics.add(new Topic(topicFileName, displayName));
-                System.out.println("[TOPIC_SELECTOR] Добавлена тема: " + topicFileName + " -> " + displayName);
+                    String displayName = getDisplayName(topicFileName);
+                    topics.add(new Topic(topicFileName, displayName));
+                    System.out.println("[TOPIC_SELECTOR] Добавлена тема: " + topicFileName + " -> " + displayName);
+                }
             }
+            System.out.println("[TOPIC_SELECTOR] Инициализировано тем: " + topics.size());
         }
-        System.out.println("[TOPIC_SELECTOR] Инициализировано тем: " + topics.size());
-    }
+
 
     /**
      * Преобразует имя файла в красивое название для пользователя

@@ -7,7 +7,7 @@ package org.example.Quiz;
  * подсчета очков и управления прогрессом викторины.
  */
 public class Quiz {
-    private Memory memory;
+    private  Memory memory;
     private int currentQuestionIndex = 0;
     private int score = 0;
 
