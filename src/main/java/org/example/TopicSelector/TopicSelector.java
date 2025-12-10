@@ -23,18 +23,24 @@ public class TopicSelector {
      */
     public void initializeFromMemory(DiskMemory memory) {
         topics.clear();
-        if (memory.hasData() && memory.getData().length > 0) {
-            DataQuestion chooseDataQuestion = memory.getData()[0];
-            String[] options = chooseDataQuestion.getOptions();
 
+
+        if (memory.hasData() && memory.getData().length > 0) {
+            DataQuestion chooseDataQuestion = new DataQuestion(
+                     memory.getData()[0].getQuestion()
+                    ,memory.getData()[0].getOptions()
+                    ,memory.getData()[0].getAnswer());
+            String[] options = chooseDataQuestion.getOptions();
+            System.out.println("[TOPIC_SELECTOR]Тема №1 "+ options[0]);
             for (String topicFileName : options) {
-                String displayName = getDisplayName(topicFileName);
-                topics.add(new Topic(topicFileName, displayName));
-                System.out.println("[TOPIC_SELECTOR] Добавлена тема: " + topicFileName + " -> " + displayName);
+                    String displayName = getDisplayName(topicFileName);
+                    topics.add(new Topic(topicFileName, displayName));
+                    System.out.println("[TOPIC_SELECTOR] Добавлена тема: " + topicFileName + " -> " + displayName);
+                }
             }
+            System.out.println("[TOPIC_SELECTOR] Инициализировано тем: " + topics.size());
         }
-        System.out.println("[TOPIC_SELECTOR] Инициализировано тем: " + topics.size());
-    }
+
 
     /**
      * Преобразует имя файла в красивое название для пользователя
@@ -84,15 +90,12 @@ public class TopicSelector {
         }
 
         Topic currentTopic = topics.get(currentIndex);
-        StringBuilder sb = new StringBuilder();
 
-        sb.append("🎯 Выбор темы викторины\n\n");
-        sb.append(currentTopic.displayName).append("\n\n");
-        sb.append("Листайте кнопками чтобы увидеть другие темы\n");
-        sb.append("Нажмите 'Играть' чтобы начать викторину\n\n");
-        sb.append("Страница ").append(currentIndex + 1).append(" из ").append(topics.size());
-
-        return sb.toString();
+        return "🎯 Выбор темы викторины\n\n" +
+                currentTopic.displayName + "\n\n" +
+                "Листайте кнопками чтобы увидеть другие темы\n" +
+                "Нажмите 'Играть' чтобы начать викторину\n\n" +
+                "Страница " + (currentIndex + 1) + " из " + topics.size();
     }
 
     /**

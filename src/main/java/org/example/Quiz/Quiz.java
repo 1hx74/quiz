@@ -32,7 +32,7 @@ public class Quiz {
 
     /**
      * Возвращает хранилище данных викторины.
-     * @return объект MemoryInterface с вопросами и ответами
+     * @return объект AbstractMemory с вопросами и ответами
      */
     public AbstractMemory getMemory() {
         return memory;
@@ -40,7 +40,7 @@ public class Quiz {
 
     /**
      * Устанавливает хранилище данных викторины.
-     * @param memory объект MemoryInterface с вопросами и ответами
+     * @param memory объект AbstractMemory с вопросами и ответами
      */
     public void setMemory(AbstractMemory memory) {
         this.memory = memory;
@@ -259,7 +259,7 @@ public class Quiz {
     }
 
     /**
-     * Сбрасывает состояние викторина к начальному.
+     * Сбрасывает состояние викторины к начальному.
      * Обнуляет счет, текущий вопрос и очищает все ответы пользователя.
      */
     public void reset() {

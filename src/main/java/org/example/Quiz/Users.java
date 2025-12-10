@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -69,18 +70,16 @@ public class Users {
 
     /**
      * Устанавливает имя пользователя для отображения в лидерборде.
+     *
      * @param chatId идентификатор чата пользователя
-     * @param name имя для лидерборда
-     * @return true если имя успешно установлено, false если пользователь не найден
+     * @param name   имя для лидерборда
      */
-    public boolean setLeaderboardName(String chatId, String name) {
+    public void setLeaderboardName(String chatId, String name) {
         UserData user = users.get(chatId);
         if (user != null) {
             user.setLeaderboardName(name);
             System.out.println("[USERS] Установлено имя для лидерборда: " + chatId + " -> " + name);
-            return true;
         }
-        return false;
     }
 
     /**
@@ -183,7 +182,7 @@ public class Users {
             System.out.println("[USERS-DEBUG] Сгенерированный JSON: " + json);
 
             // Простая запись в файл
-            try (PrintWriter writer = new PrintWriter(filePath, "UTF-8")) {
+            try (PrintWriter writer = new PrintWriter(filePath, StandardCharsets.UTF_8)) {
                 writer.print(json);
             }
 
