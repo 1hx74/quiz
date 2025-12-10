@@ -1,5 +1,8 @@
 package org.example.Quiz;
 
+import org.example.Quiz.Memory.AbstractMemory;
+import org.example.Quiz.Memory.DiskMemory;
+
 /**
  * Класс для проведения викторины.
  * Управляет вопросами, ответами пользователя и навигацией по викторине.
@@ -7,7 +10,7 @@ package org.example.Quiz;
  * подсчета очков и управления прогрессом викторины.
  */
 public class Quiz {
-    private Memory memory;
+    private AbstractMemory memory;
     private int currentQuestionIndex = 0;
     private int score = 0;
 
@@ -15,7 +18,7 @@ public class Quiz {
      * Создает викторину с указанным хранилищем данных.
      * @param memory хранилище данных с вопросами и ответами
      */
-    public Quiz(Memory memory) {
+    public Quiz(AbstractMemory memory) {
         this.memory = memory;
         System.out.println("[QUIZ] Создан Quiz, вопросов=" + memory.getData().length);
     }
@@ -24,22 +27,22 @@ public class Quiz {
      * Создает пустую викторину для десериализации Jackson.
      */
     public Quiz() {
-        this.memory = new Memory();
+        this.memory = new DiskMemory();
     }
 
     /**
      * Возвращает хранилище данных викторины.
-     * @return объект Memory с вопросами и ответами
+     * @return объект MemoryInterface с вопросами и ответами
      */
-    public Memory getMemory() {
+    public AbstractMemory getMemory() {
         return memory;
     }
 
     /**
      * Устанавливает хранилище данных викторины.
-     * @param memory объект Memory с вопросами и ответами
+     * @param memory объект MemoryInterface с вопросами и ответами
      */
-    public void setMemory(Memory memory) {
+    public void setMemory(AbstractMemory memory) {
         this.memory = memory;
     }
 
@@ -80,15 +83,16 @@ public class Quiz {
      * @return форматированная строка с номером вопроса, текстом и вариантами ответов
      */
     public String getCurrentQuestionText() {
-        if (memory.getData().length == 0) {
+        DataQuestion[] data = memory.getData();
+        if (data.length == 0) {
             return "❌ Нет доступных вопросов";
         }
 
-        if (currentQuestionIndex < 0 || currentQuestionIndex >= memory.getData().length) {
+        if (currentQuestionIndex < 0 || currentQuestionIndex >= data.length) {
             currentQuestionIndex = 0;
         }
 
-        DataQuestion currentDataQuestion = memory.getData()[currentQuestionIndex];
+        DataQuestion currentDataQuestion = data[currentQuestionIndex];
         return formatQuestionWithNavigation(currentDataQuestion, currentQuestionIndex);
     }
 
@@ -97,7 +101,8 @@ public class Quiz {
      * @return строка с информацией о завершении викторины
      */
     public String getFinalMessage() {
-        int totalQuestions = memory.getData().length;
+        DataQuestion[] data = memory.getData();
+        int totalQuestions = data.length;
         int answered = countAnsweredQuestions();
 
         return "🏁 Вопросы закончились!\n\n" +
@@ -110,7 +115,8 @@ public class Quiz {
      * @return форматированная строка с результатами викторины
      */
     public String getResults() {
-        int totalQuestions = memory.getData().length;
+        DataQuestion[] data = memory.getData();
+        int totalQuestions = data.length;
         double percentage = totalQuestions > 0 ? (score * 100.0 / totalQuestions) : 0;
 
         return "🏆 Викторина завершена!\n\n" +
@@ -151,20 +157,21 @@ public class Quiz {
      * @return сообщение о результате обработки ответа
      */
     public String processAnswer(String answerText) {
+        DataQuestion[] data = memory.getData();
         System.out.println("[QUIZ] Обработка ответа '" + answerText + "' на вопрос " + (currentQuestionIndex + 1));
 
-        if (currentQuestionIndex >= memory.getData().length) {
+        if (currentQuestionIndex >= data.length) {
             return "❌ Викторина завершена!";
         }
 
-        DataQuestion currentDataQuestion = memory.getData()[currentQuestionIndex];
+        DataQuestion currentDataQuestion = data[currentQuestionIndex];
         String previousAnswer = currentDataQuestion.getUserAnswer();
         currentDataQuestion.setUserAnswer(answerText);
 
         String result;
         int answerIndex = convertAnswerToIndex(answerText);
 
-        //  ВНИМАНИЕ: специально оставлено уведомнелине об ответе пользователя
+        //  ВНИМАНИЕ: специально оставлено уведомление об ответе пользователя
         if (!answerText.equals(previousAnswer)) {
             if (answerIndex != -1 && currentDataQuestion.validAnswer(answerIndex)) {
                 if (previousAnswer == null || !currentDataQuestion.validAnswer(convertAnswerToIndex(previousAnswer))) {
@@ -185,10 +192,10 @@ public class Quiz {
 
         // Автоматически переходим к следующему вопросу
         // Но только если это не был повторный выбор того же ответа
-        if (!answerText.equals(previousAnswer) && currentQuestionIndex < memory.getData().length) {
-            if (currentQuestionIndex == memory.getData().length - 1) {
+        if (!answerText.equals(previousAnswer) && currentQuestionIndex < data.length) {
+            if (currentQuestionIndex == data.length - 1) {
                 // Если это был последний вопрос, переходим к финальному сообщению
-                currentQuestionIndex = memory.getData().length;
+                currentQuestionIndex = data.length;
             } else {
                 currentQuestionIndex++;
             }
@@ -202,12 +209,13 @@ public class Quiz {
      * Если это последний вопрос, переходит к финальному сообщению.
      */
     public void nextQuestion() {
-        if (memory.getData().length == 0) return;
+        DataQuestion[] data = memory.getData();
+        if (data.length == 0) return;
 
-        if (currentQuestionIndex < memory.getData().length - 1) {
+        if (currentQuestionIndex < data.length - 1) {
             currentQuestionIndex++;
-        } else if (currentQuestionIndex == memory.getData().length - 1) {
-            currentQuestionIndex = memory.getData().length;
+        } else if (currentQuestionIndex == data.length - 1) {
+            currentQuestionIndex = data.length;
         }
         System.out.println("[QUIZ] Переход к позиции: " + currentQuestionIndex);
     }
@@ -217,14 +225,15 @@ public class Quiz {
      * Если это первый вопрос, переходит к последнему вопросу.
      */
     public void previousQuestion() {
-        if (memory.getData().length == 0) return;
+        DataQuestion[] data = memory.getData();
+        if (data.length == 0) return;
 
-        if (currentQuestionIndex == memory.getData().length) {
-            currentQuestionIndex = memory.getData().length - 1;
+        if (currentQuestionIndex == data.length) {
+            currentQuestionIndex = data.length - 1;
         } else if (currentQuestionIndex > 0) {
             currentQuestionIndex--;
         } else {
-            currentQuestionIndex = memory.getData().length - 1;
+            currentQuestionIndex = data.length - 1;
         }
         System.out.println("[QUIZ] Переход к позиции: " + currentQuestionIndex);
     }
@@ -242,14 +251,15 @@ public class Quiz {
      * Сохраняет все предыдущие ответы пользователя.
      */
     public void goToFirstQuestion() {
-        if (memory.getData().length > 0) {
+        DataQuestion[] data = memory.getData();
+        if (data.length > 0) {
             currentQuestionIndex = 0;
             System.out.println("[QUIZ] Переход к первому вопросу с сохраненными ответами");
         }
     }
 
     /**
-     * Сбрасывает состояние викторины к начальному.
+     * Сбрасывает состояние викторина к начальному.
      * Обнуляет счет, текущий вопрос и очищает все ответы пользователя.
      */
     public void reset() {
@@ -270,9 +280,10 @@ public class Quiz {
      */
     private String formatQuestionWithNavigation(DataQuestion dataQuestion, int questionIndex) {
         StringBuilder result = new StringBuilder();
+        DataQuestion[] data = memory.getData();
 
         result.append("🎯 Вопрос ").append(questionIndex + 1)
-                .append(" из ").append(memory.getData().length)
+                .append(" из ").append(data.length)
                 .append("\n\n");
 
         result.append(dataQuestion.getQuestion()).append("\n\n");

@@ -1,7 +1,7 @@
 package org.example;
 
 import org.example.Quiz.DataQuestion;
-import org.example.Quiz.Memory;
+import org.example.Quiz.Memory.DiskMemory;
 import org.example.TopicSelector.TopicSelector;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,12 +10,12 @@ import org.junit.jupiter.api.Assertions;
 public class TestTopicSelector {
 
     private TopicSelector topicSelector;
-    private Memory memory;
+    private DiskMemory memory;
 
     @BeforeEach
     public void setUp() {
         topicSelector = new TopicSelector();
-        memory = new Memory();
+        memory = new DiskMemory();
     }
 
     /**

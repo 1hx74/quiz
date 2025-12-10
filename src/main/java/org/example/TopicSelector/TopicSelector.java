@@ -1,7 +1,7 @@
 package org.example.TopicSelector;
 
 import org.example.Quiz.DataQuestion;
-import org.example.Quiz.Memory;
+import org.example.Quiz.Memory.DiskMemory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,7 @@ import java.util.List;
  * Класс для выбора темы викторины со скроллингом
  */
 public class TopicSelector {
-    private final List<Topic> topics;
+    private final List<Topic> topics; // Храним темы
     private int currentIndex;
 
     public TopicSelector() {
@@ -19,9 +19,9 @@ public class TopicSelector {
     }
 
     /**
-     * Инициализируем список тем из choose.json
+     * Инициализирует список тем из choose.json
      */
-    public void initializeFromMemory(Memory memory) {
+    public void initializeFromMemory(DiskMemory memory) {
         topics.clear();
         if (memory.hasData() && memory.getData().length > 0) {
             DataQuestion chooseDataQuestion = memory.getData()[0];

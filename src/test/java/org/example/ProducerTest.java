@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Assertions;
 
 import java.io.InputStream;
 import java.io.PrintStream;
+import java.util.Arrays;
 
 public class ProducerTest {
     Users users;
@@ -55,6 +56,8 @@ public class ProducerTest {
         Assertions.assertEquals("chat123", welcomeResponse.getChatId(), "ChatId должен соответствовать");
 
         Assertions.assertTrue(menuResponse.isOut(), "Меню должно быть исходящим");
+        System.out.println("oinvowinvowinv");
+        System.out.println(menuResponse);
         Assertions.assertEquals("menu", menuResponse.getKeyboardType(), "Тип клавиатуры должен быть 'menu'");
     }
 
@@ -325,6 +328,7 @@ public class ProducerTest {
 
         Content topicNavButtonContent = new Content(false, "chat123", "topic_forwards_button");
         Content[] result = producer.produce(topicNavButtonContent);
+        System.out.println(Arrays.toString(result));
 
         Assertions.assertNotNull(result, "Результат не должен быть null");
         Assertions.assertEquals(1, result.length, "Должен вернуться один контент");

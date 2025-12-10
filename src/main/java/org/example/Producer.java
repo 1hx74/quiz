@@ -3,6 +3,8 @@ package org.example;
 import org.example.DataMessage.Content;
 import org.example.DataMessage.KeyboardService;
 import org.example.Quiz.*;
+import org.example.Quiz.Memory.AiMemory;
+import org.example.Quiz.Memory.DiskMemory;
 import org.example.TopicSelector.TopicSelector;
 import org.example.GenerationQuiz.CreateQuiz;
 import org.example.OpenRouter.OpenRouterClient;
@@ -162,20 +164,20 @@ public class Producer {
         if (topic.isEmpty() || topic.length() > 100) {
             return new Content[] {
                     new Content(true, chatId, """
-                            ❌ Неверная тема!
-                            Тема должна быть от 1 до 100 символов.
-                            Пожалуйста, введите тему еще раз:""")
+                        ❌ Неверная тема!
+                        Тема должна быть от 1 до 100 символов.
+                        Пожалуйста, введите тему еще раз:""")
             };
         }
 
         try {
             System.out.println("[PRODUCER] Генерация викторины по теме: " + topic);
 
-            // Генерируем викторину с помощью ИИ
-            Memory generatedMemory = createQuiz.generateQuiz(topic);
+            // Генерируем викторину с помощью ИИ - теперь возвращает AiMemory
+            AiMemory generatedMemory = createQuiz.generateQuiz(topic);
 
             // Создаем квиз из сгенерированной памяти
-            Quiz generatedQuiz = new Quiz(generatedMemory);
+            Quiz generatedQuiz = new Quiz(generatedMemory); // Квиз принимает
             userData.setCurrentQuiz(generatedQuiz);
             userData.setState("quiz");
 
@@ -560,7 +562,7 @@ public class Producer {
     private Content[] startTopicSelection(String chatId, UserData userData) {
         System.out.println("[PRODUCER] Запуск выбора темы для " + chatId);
 
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         memory.reConnect("/choose.json");
         memory.read();
 
@@ -604,7 +606,7 @@ public class Producer {
 
         System.out.println("[PRODUCER] Запуск викторины по теме: " + selectedTopicFileName);
 
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         memory.reConnect("/" + selectedTopicFileName + ".json");
         memory.read();
 

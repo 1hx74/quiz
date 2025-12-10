@@ -1,7 +1,7 @@
 package org.example;
 
 import org.example.GenerationQuiz.CreateQuiz;
-import org.example.Quiz.Memory;
+import org.example.Quiz.Memory.AiMemory;
 import org.example.Quiz.DataQuestion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions;
 
 import java.lang.reflect.Method;
 
-public class testParser {
+public class TestParser {
 
     private CreateQuiz createQuiz;
     private Method parseMethod;
@@ -44,7 +44,7 @@ public class testParser {
         }
         """;
 
-        Memory memory = (Memory) parseMethod.invoke(createQuiz, json, "Тест");
+        AiMemory memory = (AiMemory) parseMethod.invoke(createQuiz, json, "Тест");
 
         Assertions.assertNotNull(memory);
         Assertions.assertEquals(2, memory.getData().length);
@@ -82,7 +82,7 @@ public class testParser {
         ```
         """;
 
-        Memory memory = (Memory) parseMethod.invoke(createQuiz, json, "Наука");
+        AiMemory memory = (AiMemory) parseMethod.invoke(createQuiz, json, "Наука");
 
         Assertions.assertNotNull(memory);
         Assertions.assertEquals(1, memory.getData().length);

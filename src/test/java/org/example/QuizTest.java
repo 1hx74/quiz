@@ -1,7 +1,7 @@
 package org.example;
 
 import org.example.Quiz.DataQuestion;
-import org.example.Quiz.Memory;
+import org.example.Quiz.Memory.DiskMemory;
 import org.example.Quiz.Quiz;
 import org.example.Quiz.Users;
 import org.junit.jupiter.api.AfterEach;
@@ -44,7 +44,7 @@ class QuizTest {
      */
     @Test
     public void testQuizConstructorWithMemory() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Тестовый вопрос", new String[]{"Вариант А", "Вариант Б", "Вариант В", "Вариант Г"}, 1)
         };
@@ -76,7 +76,7 @@ class QuizTest {
      */
     @Test
     public void testQuizProcessCorrectAnswer() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Тестовый вопрос", new String[]{"Вариант А", "Вариант Б", "Вариант В", "Вариант Г"}, 1)
         };
@@ -96,7 +96,7 @@ class QuizTest {
      */
     @Test
     public void testQuizProcessIncorrectAnswer() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Тестовый вопрос", new String[]{"Вариант А", "Вариант Б", "Вариант В", "Вариант Г"}, 1)
         };
@@ -116,7 +116,7 @@ class QuizTest {
      */
     @Test
     public void testQuizProcessSameAnswer() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Тестовый вопрос", new String[]{"Вариант А", "Вариант Б", "Вариант В", "Вариант Г"}, 1)
         };
@@ -136,7 +136,7 @@ class QuizTest {
      */
     @Test
     public void testQuizNavigation() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Вопрос 1", new String[]{"А", "Б", "В", "Г"}, 0),
                 new DataQuestion("Вопрос 2", new String[]{"А", "Б", "В", "Г"}, 1),
@@ -166,7 +166,7 @@ class QuizTest {
      */
     @Test
     public void testQuizGoToFinalMessage() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Вопрос 1", new String[]{"А", "Б", "В", "Г"}, 0),
                 new DataQuestion("Вопрос 2", new String[]{"А", "Б", "В", "Г"}, 1)
@@ -186,7 +186,7 @@ class QuizTest {
      */
     @Test
     public void testQuizGetCurrentQuestionText() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Тестовый вопрос?", new String[]{"Ответ А", "Ответ Б", "Ответ В", "Ответ Г"}, 1)
         };
@@ -215,7 +215,7 @@ class QuizTest {
      */
     @Test
     public void testQuizGetCurrentQuestionTextWithAnswer() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Тестовый вопрос?", new String[]{"Ответ А", "Ответ Б", "Ответ В", "Ответ Г"}, 1)
         };
@@ -246,7 +246,7 @@ class QuizTest {
      */
     @Test
     public void testQuizGetFinalMessage() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Вопрос 1", new String[]{"А", "Б", "В", "Г"}, 0),
                 new DataQuestion("Вопрос 2", new String[]{"А", "Б", "В", "Г"}, 1)
@@ -272,7 +272,7 @@ class QuizTest {
      */
     @Test
     public void testQuizGetResultsWith50Percent() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Вопрос 1", new String[]{"А", "Б", "В", "Г"}, 0),
                 new DataQuestion("Вопрос 2", new String[]{"А", "Б", "В", "Г"}, 1)
@@ -304,7 +304,7 @@ class QuizTest {
      */
     @Test
     public void testQuizReset() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Вопрос 1", new String[]{"А", "Б", "В", "Г"}, 0),
                 new DataQuestion("Вопрос 2", new String[]{"А", "Б", "В", "Г"}, 1)
@@ -332,7 +332,7 @@ class QuizTest {
      */
     @Test
     public void testQuizProcessInvalidAnswer() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Тестовый вопрос", new String[]{"Вариант А", "Вариант Б", "Вариант В", "Вариант Г"}, 1)
         };
@@ -352,7 +352,7 @@ class QuizTest {
      */
     @Test
     public void testQuizWithNoQuestions() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         memory.setData(new DataQuestion[0]);
 
         Quiz quiz = new Quiz(memory);
@@ -371,7 +371,7 @@ class QuizTest {
      */
     @Test
     public void testAnswerConversion() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         Quiz quiz = new Quiz(memory);
 
         // Используем рефлексию для тестирования приватных методов
@@ -393,7 +393,7 @@ class QuizTest {
      */
     @Test
     public void testQuizGetTotalQuestions() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Вопрос 1", new String[]{"А", "Б"}, 0),
                 new DataQuestion("Вопрос 2", new String[]{"А", "Б"}, 1),
@@ -410,7 +410,7 @@ class QuizTest {
      */
     @Test
     public void testQuizScoreForDifferentAnswerTypes() {
-        Memory memory = new Memory();
+        DiskMemory memory = new DiskMemory();
         DataQuestion[] data = new DataQuestion[] {
                 new DataQuestion("Вопрос 1", new String[]{"А", "Б", "В", "Г"}, 0),
                 new DataQuestion("Вопрос 2", new String[]{"А", "Б", "В", "Г"}, 1),

@@ -1,7 +1,7 @@
 package org.example.GenerationQuiz;
 
 import org.example.OpenRouter.OpenRouterClient;
-import org.example.Quiz.Memory;
+import org.example.Quiz.Memory.AiMemory;
 import org.example.Quiz.DataQuestion;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -19,9 +19,9 @@ public class CreateQuiz {
     /**
      * Генерирует викторину по заданной теме
      * @param topic тема викторины
-     * @return объект Memory с сгенерированными вопросами
+     * @return объект AiMemory с сгенерированными вопросами
      */
-    public Memory generateQuiz(String topic) {
+    public AiMemory generateQuiz(String topic) {
         try {
             // Создаем промпт для генерации викторины
             String prompt = createQuizPrompt(topic);
@@ -29,7 +29,7 @@ public class CreateQuiz {
             // Отправляем запрос к ИИ
             String aiResponse = openRouterClient.sendRequest(prompt);
 
-            // Парсим ответ и создаем объект Memory
+            // Парсим ответ и создаем объект AiMemory
             return parseQuizResponse(aiResponse, topic);
 
         } catch (Exception e) {
@@ -69,14 +69,16 @@ public class CreateQuiz {
     }
 
     /**
-     * Парсит ответ от ИИ и создает объект Memory
+     * Парсит ответ от ИИ и создает объект AiMemory
      */
-    private Memory parseQuizResponse(String aiResponse, String topic) {
+    private AiMemory parseQuizResponse(String aiResponse, String topic) {
         String cleanResponse = aiResponse.trim();
 
         // пытаемся извлечь JSON
         if (cleanResponse.contains("```json")) {
             cleanResponse = cleanResponse.replace("```json", "").replace("```", "").trim();
+        } else if (cleanResponse.contains("```")) {
+            cleanResponse = cleanResponse.replace("```", "").trim();
         }
 
         JSONObject json = new JSONObject(cleanResponse);
@@ -102,11 +104,10 @@ public class CreateQuiz {
             dataQuestions[i] = new DataQuestion(questionText, options, correctAnswer);
         }
 
-        // Создаем и возвращаем Memory
-        Memory memory = new Memory();
-        memory.setData(dataQuestions);
+        // Создаем и возвращаем AiMemory
+        AiMemory aiMemory = new AiMemory(dataQuestions, topic);
         System.out.println("[CREATE_QUIZ] Успешно сгенерирована викторина по теме: " + topic + ", вопросов: " + dataQuestions.length);
 
-        return memory;
+        return aiMemory;
     }
 }

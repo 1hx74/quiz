@@ -1,0 +1,8 @@
+{
+  "chat123" : {
+    "state" : "quiz",
+    "score" : 0,
+    "allScore" : { },
+    "leaderboardName" : null
+  }
+}
