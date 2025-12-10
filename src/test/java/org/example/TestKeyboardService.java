@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Assertions;
 
 import java.util.Map;
 
+import static org.example.DataMessage.Constants.*;
+
 public class TestKeyboardService {
 
     private KeyboardService keyboardService;
@@ -24,8 +26,8 @@ public class TestKeyboardService {
         Map<String, String> mainButtons = keyboardService.getMainButtons();
 
         Assertions.assertEquals(2, mainButtons.size(), "Должно быть 2 кнопки в главном меню");
-        Assertions.assertEquals("quiz_button", mainButtons.get("Викторины"));
-        Assertions.assertEquals("generation_button", mainButtons.get("Сгенерировать"));
+        Assertions.assertEquals(QUIZ_BUTTON, mainButtons.get("Викторины"));
+        Assertions.assertEquals(GENERATION_BUTTON, mainButtons.get("Сгенерировать"));
     }
 
     /**
@@ -36,10 +38,10 @@ public class TestKeyboardService {
         Map<String, String> testButtons = keyboardService.getTestAnswerButtons();
 
         Assertions.assertEquals(4, testButtons.size(), "Должно быть 4 кнопки ответов");
-        Assertions.assertEquals("A_button", testButtons.get("A"));
-        Assertions.assertEquals("B_button", testButtons.get("B"));
-        Assertions.assertEquals("C_button", testButtons.get("C"));
-        Assertions.assertEquals("D_button", testButtons.get("D"));
+        Assertions.assertEquals(A_BUTTON, testButtons.get("A"));
+        Assertions.assertEquals(B_BUTTON, testButtons.get("B"));
+        Assertions.assertEquals(C_BUTTON, testButtons.get("C"));
+        Assertions.assertEquals(D_BUTTON, testButtons.get("D"));
     }
 
     /**
@@ -50,8 +52,8 @@ public class TestKeyboardService {
         Map<String, String> topicNavButtons = keyboardService.getForwardsAndBackwardsTopicButtons();
 
         Assertions.assertEquals(2, topicNavButtons.size(), "Должно быть 2 кнопки навигации по темам");
-        Assertions.assertEquals("topic_forwards_button", topicNavButtons.get("Вперед"));
-        Assertions.assertEquals("topic_backwards_button", topicNavButtons.get("Назад"));
+        Assertions.assertEquals(TOPIC_FORWARDS_BUTTON, topicNavButtons.get("Вперед"));
+        Assertions.assertEquals(TOPIC_BACKWARDS_BUTTON, topicNavButtons.get("Назад"));
     }
 
     /**
@@ -62,8 +64,8 @@ public class TestKeyboardService {
         Map<String, String> quizNavButtons = keyboardService.getForwardsAndBackwardsQuizButtons();
 
         Assertions.assertEquals(2, quizNavButtons.size(), "Должно быть 2 кнопки навигации по викторине");
-        Assertions.assertEquals("quiz_forwards_button", quizNavButtons.get("Вперед"));
-        Assertions.assertEquals("quiz_backwards_button", quizNavButtons.get("Назад"));
+        Assertions.assertEquals(QUIZ_FORWARDS_BUTTON, quizNavButtons.get("Вперед"));
+        Assertions.assertEquals(QUIZ_BACKWARDS_BUTTON, quizNavButtons.get("Назад"));
     }
 
     /**
@@ -74,8 +76,8 @@ public class TestKeyboardService {
         Map<String, String> choiceButtons = keyboardService.getChoiceQuiz();
 
         Assertions.assertEquals(2, choiceButtons.size(), "Должно быть 2 кнопки выбора викторины");
-        Assertions.assertEquals("play_button", choiceButtons.get("Играть"));
-        Assertions.assertEquals("menu_button", choiceButtons.get("В меню"));
+        Assertions.assertEquals(PLAY_BUTTON, choiceButtons.get("Играть"));
+        Assertions.assertEquals(MENU_BUTTON, choiceButtons.get("В меню"));
     }
 
     /**
@@ -86,8 +88,8 @@ public class TestKeyboardService {
         Map<String, String> finalButtons = keyboardService.getFinalQuizButton();
 
         Assertions.assertEquals(2, finalButtons.size(), "Должно быть 2 кнопки в финальном сообщении");
-        Assertions.assertEquals("at_the_top_button", finalButtons.get("В начало"));
-        Assertions.assertEquals("end_quiz_button", finalButtons.get("Сдать"));
+        Assertions.assertEquals(AT_THE_TOP_BUTTON, finalButtons.get("В начало"));
+        Assertions.assertEquals(END_QUIZ_BUTTON, finalButtons.get("Сдать"));
     }
 
     /**
@@ -98,7 +100,7 @@ public class TestKeyboardService {
         Map<String, String> goMenuButtons = keyboardService.getGoMenu();
 
         Assertions.assertEquals(1, goMenuButtons.size(), "Должна быть 1 кнопка возврата в меню");
-        Assertions.assertEquals("menu_button", goMenuButtons.get("В меню"));
+        Assertions.assertEquals(MENU_BUTTON, goMenuButtons.get("В меню"));
     }
 
 }

@@ -10,6 +10,8 @@ import org.example.TopicSelector.TopicSelector;
 import org.example.GenerationQuiz.CreateQuiz;
 import org.example.OpenRouter.OpenRouterClient;
 
+import static org.example.DataMessage.Constants.*;
+
 /**
  * Класс-производитель для обработки пользовательского контента и управления состоянием пользователей.
  * Обрабатывает входящие сообщения и возвращает соответствующий контент для ответа.
@@ -241,25 +243,25 @@ public class Producer {
 
         // Навигационные кнопки в выборе темы
         switch (callbackData) {
-            case "topic_forwards_button", "topic_backwards_button" -> {
+            case TOPIC_FORWARDS_BUTTON, TOPIC_BACKWARDS_BUTTON -> {
                 return handleTopicNavigationButtons(callbackData, chatId, userData);
             }
 
 
             // Навигационные кнопки в викторине
-            case "quiz_forwards_button", "quiz_backwards_button" -> {
+            case QUIZ_FORWARDS_BUTTON, QUIZ_BACKWARDS_BUTTON -> {
                 return handleQuizNavigationButtons(callbackData, chatId, userData);
             }
 
 
             // Кнопки ответов
-            case "A_button", "B_button", "C_button", "D_button" -> {
+            case A_BUTTON, B_BUTTON, C_BUTTON, D_BUTTON -> {
                 return handleAnswerButtons(callbackData, chatId, userData);
             }
 
 
             // Кнопка перехода к первому вопросу
-            case "at_the_top_button" -> {
+            case AT_THE_TOP_BUTTON -> {
                 return handleAtTheTopButton(chatId, userData);
             }
 
@@ -267,23 +269,23 @@ public class Producer {
             // Остальные кнопки
             default -> {
                 switch (callbackData) {
-                    case "quiz_button":
+                    case QUIZ_BUTTON:
                         return startTopicSelection(chatId, userData);
 
-                    case "play_button":
+                    case PLAY_BUTTON:
                         return startQuizWithSelectedTopic(chatId, userData);
 
-                    case "menu_button":
+                    case MENU_BUTTON:
                         userData.setState("menu");
                         userData.setCurrentQuiz(null);
                         userData.setTopicSelector(null);
                         return new Content[]{
                                 new Content(true, chatId, MENU_MESSAGE, null, "menu")
                         };
-                    case "generation_button":
+                    case GENERATION_BUTTON:
                         return generationQuiz(chatId, userData);
 
-                    case "end_quiz_button":
+                    case END_QUIZ_BUTTON:
                         return handleQuizCompletion(chatId, userData);
 
                     default:
@@ -351,7 +353,7 @@ public class Producer {
      */
     private Content[] handleTopicNavigationButtons(String callbackData, String chatId, UserData userData) {
         if (userData.getTopicSelector() != null && "topic_selection".equals(userData.getState())) {
-            if (callbackData.equals("topic_forwards_button")) {
+            if (callbackData.equals(TOPIC_FORWARDS_BUTTON)) {
                 userData.getTopicSelector().next();
             } else {
                 userData.getTopicSelector().previous();
@@ -382,7 +384,7 @@ public class Producer {
         }
 
         // Выполняем навигацию
-        if (callbackData.equals("quiz_forwards_button")) {
+        if (callbackData.equals(QUIZ_FORWARDS_BUTTON)) {
             quiz.nextQuestion();
         } else {
             quiz.previousQuestion();

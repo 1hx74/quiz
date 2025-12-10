@@ -11,6 +11,8 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 
+import static org.example.DataMessage.Constants.*;
+
 public class ProducerTest {
     Users users;
     private InputStream originalIn;
@@ -127,7 +129,7 @@ public class ProducerTest {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Content menuButtonContent = new Content(false, "chat123", "menu_button");
+        Content menuButtonContent = new Content(false, "chat123", MENU_BUTTON);
         Content[] result = producer.produce(menuButtonContent);
 
         Assertions.assertNotNull(result, "Результат не должен быть null");
@@ -147,7 +149,7 @@ public class ProducerTest {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Content generationButtonContent = new Content(false, "chat123", "generation_button");
+        Content generationButtonContent = new Content(false, "chat123", GENERATION_BUTTON);
         Content[] result = producer.produce(generationButtonContent);
 
         Assertions.assertNotNull(result, "Результат не должен быть null");
@@ -166,7 +168,7 @@ public class ProducerTest {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Content quizButtonContent = new Content(false, "chat123", "quiz_button");
+        Content quizButtonContent = new Content(false, "chat123", QUIZ_BUTTON);
         Content[] result = producer.produce(quizButtonContent);
 
         Assertions.assertNotNull(result, "Результат не должен быть null");
@@ -225,7 +227,7 @@ public class ProducerTest {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Content answerButtonContent = new Content(false, "chat123", "A_button");
+        Content answerButtonContent = new Content(false, "chat123", A_BUTTON);
         Content[] result = producer.produce(answerButtonContent);
 
         Assertions.assertNotNull(result, "Результат не должен быть null");
@@ -244,7 +246,7 @@ public class ProducerTest {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Content navButtonContent = new Content(false, "chat123", "quiz_forwards_button");
+        Content navButtonContent = new Content(false, "chat123", QUIZ_FORWARDS_BUTTON);
         Content[] result = producer.produce(navButtonContent);
 
         Assertions.assertNotNull(result, "Результат не должен быть null");
@@ -284,7 +286,7 @@ public class ProducerTest {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Content endQuizButtonContent = new Content(false, "chat123", "end_quiz_button");
+        Content endQuizButtonContent = new Content(false, "chat123", END_QUIZ_BUTTON);
         Content[] result = producer.produce(endQuizButtonContent);
 
         Assertions.assertNotNull(result, "Результат не должен быть null");
@@ -305,7 +307,7 @@ public class ProducerTest {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Content atTheTopButtonContent = new Content(false, "chat123", "at_the_top_button");
+        Content atTheTopButtonContent = new Content(false, "chat123", AT_THE_TOP_BUTTON);
         Content[] result = producer.produce(atTheTopButtonContent);
 
         Assertions.assertNotNull(result, "Результат не должен быть null");
@@ -326,7 +328,7 @@ public class ProducerTest {
         Producer producer = new Producer();
         producer.setUsers(users);
 
-        Content topicNavButtonContent = new Content(false, "chat123", "topic_forwards_button");
+        Content topicNavButtonContent = new Content(false, "chat123", TOPIC_FORWARDS_BUTTON);
         Content[] result = producer.produce(topicNavButtonContent);
         System.out.println(Arrays.toString(result));
 

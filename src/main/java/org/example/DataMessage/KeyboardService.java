@@ -3,6 +3,8 @@ package org.example.DataMessage;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.example.DataMessage.Constants.*;
+
 /**
  * Класс хранит наборы кнопок
  */
@@ -11,47 +13,47 @@ public class KeyboardService {
 
     //Набор кнопок для меню
     private final Map<String, String> mainButtons = Map.of(
-            "Викторины", "quiz_button",
-            "Сгенерировать", "generation_button"
+            "Викторины", QUIZ_BUTTON,
+            "Сгенерировать", GENERATION_BUTTON
 
     );
 
     //Набор кнопок для тестов, уровень 1
     private final Map<String, String> testAnswerButtons = Map.of(
-            "A", "A_button",
-            "B", "B_button",
-            "C", "C_button",
-            "D", "D_button"
+            "A", A_BUTTON,
+            "B", B_BUTTON,
+            "C", C_BUTTON,
+            "D", D_BUTTON
     );
 
     //Набор кнопок для выбора викторины уровень 2
     private final Map<String, String>  forwardsAndBackwardsTopicButtons = Map.of(
-            "Вперед", "topic_forwards_button",
-            "Назад", "topic_backwards_button"
+            "Вперед", TOPIC_FORWARDS_BUTTON,
+            "Назад", TOPIC_BACKWARDS_BUTTON
     );
 
     //Набор кнопок для выбора викторины уровень 2
     private final Map<String, String>  forwardsAndBackwardsQuizButtons = Map.of(
-            "Вперед", "quiz_forwards_button",
-            "Назад", "quiz_backwards_button"
+            "Вперед", QUIZ_FORWARDS_BUTTON,
+            "Назад", QUIZ_BACKWARDS_BUTTON
     );
 
     //Набор кнопок для выборки викторины, уровень 1
     private final Map<String, String> choiceQuiz = Map.of(
-            "Играть", "play_button",
-            "В меню", "menu_button"
+            "Играть", PLAY_BUTTON,
+            "В меню", MENU_BUTTON
     );
 
 
     //Набор кнопок пред финального сообщения для квиза
     private final Map<String, String> finalQuizButton = Map.of(
-            "В начало", "at_the_top_button",
-            "Сдать", "end_quiz_button"
+            "В начало", AT_THE_TOP_BUTTON,
+            "Сдать", END_QUIZ_BUTTON
     );
 
     //Набор для финального сообщения
     private final Map<String, String> goMenu = Map.of(
-            "В меню", "menu_button"
+            "В меню", MENU_BUTTON
     );
 
 
