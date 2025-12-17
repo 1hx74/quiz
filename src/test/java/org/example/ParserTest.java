@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Assertions;
 
 import java.lang.reflect.Method;
 
-public class TestParser {
+public class ParserTest {
 
     private CreateQuiz createQuiz;
     private Method parseMethod;
@@ -36,13 +36,13 @@ public class TestParser {
               "correct_answer": 0
             },
             {
-              "question": "Вопрос 2", 
+              "question": "Вопрос 2",\s
               "options": ["1", "2", "3", "4"],
               "correct_answer": 2
             }
           ]
         }
-        """;
+       \s""";
 
         AiMemory memory = (AiMemory) parseMethod.invoke(createQuiz, json, "Тест");
 

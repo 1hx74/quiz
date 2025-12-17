@@ -171,7 +171,6 @@ public class Quiz {
         String result;
         int answerIndex = convertAnswerToIndex(answerText);
 
-        //  ВНИМАНИЕ: специально оставлено уведомление об ответе пользователя
         if (!answerText.equals(previousAnswer)) {
             if (answerIndex != -1 && currentDataQuestion.validAnswer(answerIndex)) {
                 if (previousAnswer == null || !currentDataQuestion.validAnswer(convertAnswerToIndex(previousAnswer))) {
@@ -265,7 +264,6 @@ public class Quiz {
     public void reset() {
         this.currentQuestionIndex = 0;
         this.score = 0;
-        // Очищаем ответы пользователя во всех вопросах
         for (DataQuestion dataQuestion : memory.getData()) {
             dataQuestion.setUserAnswer(null);
         }

@@ -11,8 +11,7 @@ public class Main {
         System.out.println("Запуск телеграм бота...");
 
         Users users = new Users();
-        Producer producer = new Producer();
-        producer.setUsers(users);
+        Producer producer = new Producer(users);
         Tokens token = new Tokens();
 
         if (!token.isValidForTelegramToken()) {
@@ -21,7 +20,7 @@ public class Main {
             return;
         }
 
-       String botToken = token.getTelegramToken();
+        String botToken = token.getTelegramToken();
         System.out.println(botToken);
         Bot bot = new Bot(botToken);
         bot.setProducer(producer);

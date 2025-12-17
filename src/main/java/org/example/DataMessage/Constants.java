@@ -15,4 +15,6 @@ public class Constants {
     public static final String MENU_BUTTON = "menu_button";
     public static final String AT_THE_TOP_BUTTON = "at_the_top_button";
     public static final String END_QUIZ_BUTTON = "end_quiz_button";
+    public static final String DUEL_BUTTON = "duel_button";
+    public static final String SOLO_BUTTON = "solo_button";
 }

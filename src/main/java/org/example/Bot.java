@@ -21,6 +21,7 @@ import java.util.*;
 /**
  * Телеграм бот для проведения викторин.
  * Обрабатывает входящие сообщения и callback-запросы, управляет состоянием викторины.
+ * Реализует интерфейс LongPollingSingleThreadUpdateConsumer для получения обновлений от Telegram.
  */
 public class Bot implements LongPollingSingleThreadUpdateConsumer {
     private Producer producer;
@@ -31,6 +32,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
     /**
      * Конструктор бота.
+     *
      * @param botToken токен бота полученный от BotFather
      */
     public Bot(String botToken) {
@@ -41,6 +43,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
     /**
      * Устанавливает продюсера для обработки контента.
+     *
      * @param producer объект продюсера для обработки бизнес-логики
      */
     public void setProducer(Producer producer) {
@@ -80,6 +83,7 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
     /**
      * Отправляет сообщение через Telegram API.
+     *
      * @param message сообщение для отправки
      */
     public void sendMessage(SendMessage message) {
@@ -100,6 +104,9 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     /**
      * Обрабатывает входящее обновление от Telegram API.
      * Получает обновления из телеграма и передает в Producer через Content.
+     * Также проверяет очередь сообщений от таймаутов.
+     *
+     * @param update объект обновления от Telegram API
      */
     @Override
     public void consume(Update update) {
@@ -109,6 +116,9 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
             System.out.println("[BOT] НОВОЕ ОБНОВЛЕНИЕ");
 
+            // СНАЧАЛА проверяем очередь сообщений от таймаутов
+            checkAndSendTimeoutMessages();
+
             if (update.hasCallbackQuery()) {
                 // Обработка callback от кнопок
                 String callbackData = update.getCallbackQuery().getData();
@@ -116,7 +126,6 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
                 System.out.println("[BOT] Callback от " + chatId + ": " + callbackData);
 
-                // Создаем Content и передаем в Producer
                 Content content = new Content(false, chatId, callbackData, callbackData, null);
                 responseContents = producer.produce(content);
 
@@ -127,12 +136,10 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
                 System.out.println("[BOT] Сообщение от " + chatId + ": " + messageText);
 
-                // Создаем Content и передаем в Producer
                 Content content = new Content(false, chatId, messageText);
                 responseContents = producer.produce(content);
             }
 
-            // Отправляем ответные сообщения
             if (responseContents != null && responseContents.length > 0) {
                 System.out.println("[BOT] Producer вернул " + responseContents.length + " сообщений для отправки");
 
@@ -155,7 +162,51 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     }
 
     /**
+     * Проверяет и отправляет сообщения от таймаутов из очереди.
+     * Этот метод вызывается при каждом обновлении для обеспечения
+     * своевременной отправки сообщений о таймаутах.
+     */
+    private void checkAndSendTimeoutMessages() {
+        if (producer == null) {
+            System.out.println("[BOT] Producer не установлен, пропускаем проверку очереди");
+            return;
+        }
+
+        try {
+            if (producer.hasQueuedMessages()) {
+                System.out.println("[BOT] Проверка очереди сообщений от таймаутов...");
+
+                Content[] timeoutMessages = producer.getQueuedMessages();
+
+                if (timeoutMessages != null && timeoutMessages.length > 0) {
+                    System.out.println("[BOT] Найдено " + timeoutMessages.length + " сообщений от таймаутов в очереди");
+
+                    SendMessage[] timeoutSendMessages = convertToSendMessages(timeoutMessages);
+                    int sentCount = 0;
+
+                    for (SendMessage message : timeoutSendMessages) {
+                        if (message != null) {
+                            sendMessage(message);
+                            sentCount++;
+                        }
+                    }
+
+                    System.out.println("[BOT] Отправлено " + sentCount + " сообщений от таймаутов");
+                } else {
+                    System.out.println("[BOT] Очередь сообщений пуста");
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[BOT] Ошибка при проверке очереди сообщений от таймаутов");
+            e.printStackTrace(System.err);
+        }
+    }
+
+    /**
      * Конвертирует объект Content в SendMessage для отправки через Telegram API.
+     *
+     * @param content объект Content для конвертации
+     * @return объект SendMessage или null если конвертация невозможна
      */
     private SendMessage convertToSendMessage(Content content) {
         if (!content.isOut()) {
@@ -192,6 +243,10 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
     /**
      * Создание клавиатуры из одного или двух уровней кнопок.
      * Кнопки располагаются в зависимости от их количества на каждом уровне.
+     *
+     * @param firstLevelButtons карта кнопок первого уровня (текст -> callbackData)
+     * @param secondLevelButtons карта кнопок второго уровня (текст -> callbackData)
+     * @return объект InlineKeyboardMarkup с настроенной клавиатурой
      */
     private InlineKeyboardMarkup createUniversalKeyboard(Map<String, String> firstLevelButtons,
                                                          Map<String, String> secondLevelButtons) {
@@ -231,6 +286,9 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
 
     /**
      * Конвертирует массив Content в массив SendMessage.
+     *
+     * @param contents массив объектов Content для конвертации
+     * @return массив объектов SendMessage
      */
     private SendMessage[] convertToSendMessages(Content[] contents) {
         if (contents == null) {
@@ -283,9 +341,14 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
                     keyboardService.getFinalQuizButton(),
                     new HashMap<>()));
 
-            //Кнопка на лидерборде висит после теста
+            // Кнопка на лидерборде висит после теста
             keyboardCache.put("go_menu", createUniversalKeyboard(
                     keyboardService.getGoMenu(),
+                    new HashMap<>()));
+
+            // Набор кнопок для выбора режима
+            keyboardCache.put("mode_selection", createUniversalKeyboard(
+                    keyboardService.getModeSelection(),
                     new HashMap<>()));
 
             System.out.println("[BOT] Кэш клавиатур инициализирован, создано " + keyboardCache.size() + " клавиатур");
@@ -300,6 +363,45 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
             System.err.println("[BOT] Ошибка инициализации клавиатур");
             e.printStackTrace(System.err);
         }
+    }
+
+    /**
+     * Периодически проверяет очередь сообщений от таймаутов.
+     * Этот метод может быть запущен в отдельном потоке для гарантированной
+     * отправки сообщений о таймаутах, даже если пользователь ничего не делает.
+     */
+    public void startTimeoutChecker() {
+        System.out.println("[BOT] Запуск периодической проверки очереди таймаутов...");
+
+        Timer timer = new Timer(true);
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    if (producer != null && producer.hasQueuedMessages()) {
+                        System.out.println("[BOT] [TIMER] Периодическая проверка очереди...");
+
+                        Content[] timeoutMessages = producer.getQueuedMessages();
+                        if (timeoutMessages != null && timeoutMessages.length > 0) {
+                            System.out.println("[BOT] [TIMER] Найдено " + timeoutMessages.length + " сообщений в очереди");
+
+                            // Отправляем сообщения
+                            SendMessage[] messages = convertToSendMessages(timeoutMessages);
+                            for (SendMessage message : messages) {
+                                if (message != null) {
+                                    sendMessage(message);
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    System.err.println("[BOT] [TIMER] Ошибка в периодической проверке очереди");
+                    e.printStackTrace(System.err);
+                }
+            }
+        }, 30000, 30000); // Проверяем каждые 30 секунд
+
+        System.out.println("[BOT] Периодическая проверка очереди запущена (интервал: 30 сек)");
     }
 
     /**
@@ -330,6 +432,9 @@ public class Bot implements LongPollingSingleThreadUpdateConsumer {
             System.out.println("[BOT] Бот зарегистрирован в LongPollingApplication");
 
             registerBotCommands();
+
+            startTimeoutChecker();
+
             System.out.println("[BOT] Бот успешно запущен и готов к работе");
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {

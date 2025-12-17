@@ -56,6 +56,11 @@ public class KeyboardService {
             "В меню", MENU_BUTTON
     );
 
+    //Набор кнопок для выбора режима (дуэль/одиночный)
+    private final Map<String, String> modeSelection = Map.of(
+            "Дуэль", DUEL_BUTTON,
+            "Соло", SOLO_BUTTON
+    );
 
     //геттеры
     public Map<String, String> getMainButtons() {return new HashMap<>(mainButtons);}
@@ -65,4 +70,5 @@ public class KeyboardService {
     public Map<String, String> getChoiceQuiz() {return new HashMap<>(choiceQuiz);}
     public Map<String, String> getFinalQuizButton() {return new HashMap<>(finalQuizButton);}
     public Map<String, String> getGoMenu() {return new HashMap<>(goMenu);}
+    public Map<String, String> getModeSelection() {return new HashMap<>(modeSelection);}
 }

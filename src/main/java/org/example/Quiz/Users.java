@@ -17,23 +17,33 @@ import java.util.*;
  */
 public class Users {
     private Map<String, UserData> users;
-    private static final String filePath = "users_data.json";
+    private final String filePath;
     private final ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * Конструктор класса Users.
+     * Конструктор класса Users с путем к файлу.
      * Инициализирует коллекцию пользователей, настраивает ObjectMapper
      * и загружает данные с диска. Регистрирует shutdown hook для автоматического сохранения.
+     *
+     * @param filePath путь к файлу для сохранения/загрузки данных
      */
-    public Users() {
+    public Users(String filePath) {
+        this.filePath = filePath;
         users = new HashMap<>();
 
-        // Настройка ObjectMapper
         mapper.enable(SerializationFeature.INDENT_OUTPUT);
         mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         loadFromDisk();
         Runtime.getRuntime().addShutdownHook(new Thread(this::saveToDisk));
+    }
+
+    /**
+     * Конструктор класса Users без параметров.
+     * Использует путь по умолчанию "users_data.json".
+     */
+    public Users() {
+        this("users_data.json");
     }
 
     /**
@@ -162,12 +172,18 @@ public class Users {
      * Выполняет проверку данных перед сохранением и логирует процесс.
      * В случае ошибки выводит подробную информацию в консоль.
      */
-    public void saveToDisk() {
+    public synchronized void saveToDisk() {
         try {
             System.out.println("[USERS-DEBUG] Начало сохранения, users size: " + users.size());
 
             if (users.isEmpty()) {
                 System.out.println("[USERS-DEBUG] Нет пользователей для сохранения");
+                // Создаем пустой JSON объект
+                try (FileOutputStream fos = new FileOutputStream(filePath, false); // false = перезапись
+                     OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+                     BufferedWriter writer = new BufferedWriter(osw)) {
+                    writer.write("{}");
+                }
                 return;
             }
 
@@ -179,11 +195,22 @@ public class Users {
             }
 
             String json = mapper.writeValueAsString(users);
-            System.out.println("[USERS-DEBUG] Сгенерированный JSON: " + json);
+            System.out.println("[USERS-DEBUG] Сгенерированный JSON (первые 200 символов): " +
+                    (json.length() > 200 ? json.substring(0, 200) + "..." : json));
 
-            // Простая запись в файл
-            try (PrintWriter writer = new PrintWriter(filePath, StandardCharsets.UTF_8)) {
-                writer.print(json);
+            // используем FileOutputStream с append = false
+            try (FileOutputStream fos = new FileOutputStream(filePath, false); // false = ПЕРЕЗАПИСЬ
+                 OutputStreamWriter osw = new OutputStreamWriter(fos, StandardCharsets.UTF_8);
+                 BufferedWriter writer = new BufferedWriter(osw)) {
+
+                writer.write(json);
+                writer.flush();
+
+                System.out.println("[USERS-DEBUG] Файл полностью перезаписан, размер: " + json.length() + " байт");
+
+            } catch (IOException e) {
+                System.err.println("[USERS-ERROR] Ошибка записи файла: " + e.getMessage());
+                throw e;
             }
 
             System.out.println("[USERS] Данные успешно сохранены");
