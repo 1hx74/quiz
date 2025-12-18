@@ -6,66 +6,70 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 
 public class Tokens {
+
+    private static final String TELEGRAM_ENV = "TELEGRAM_TOKEN";
+    private static final String OPEN_ROUTER_ENV = "OPEN_ROUTER_TOKEN";
+
     private final String TelegramToken;
     private final String OpenRouterToken;
 
     public Tokens() {
 
-        String fileName1 = "/bot_token.txt";
-        String token1 = loadForTelegram(fileName1);
-        String fileName2 = "/open_router_token.txt";
-        String token2 = loadForOpenRouter(fileName2);
-        this.TelegramToken = token1;
-        System.out.println("[TOKEN] Токен загружен: " +
-                (!TelegramToken.isEmpty() ? "успешно" : "не удалось"));
-        this.OpenRouterToken = token2;
-        System.out.println("[OPEN_ROUTER_TOKEN] Токен загружен: " +
-                (!OpenRouterToken.isEmpty() ? "успешно" : "не удалось"));
+        this.TelegramToken = load(
+                TELEGRAM_ENV,
+                "/bot_token.txt",
+                "[TELEGRAM_TOKEN]"
+        );
 
-    }
-    private String loadForTelegram(String filename){
-        return load(filename);
-    }
-    private String loadForOpenRouter(String filename){
-        return load(filename);
+        this.OpenRouterToken = load(
+                OPEN_ROUTER_ENV,
+                "/open_router_token.txt",
+                "[OPEN_ROUTER_TOKEN]"
+        );
     }
 
+    private String load(String envName, String resourceFile, String logPrefix) {
 
-    private String load(String filename) {
+        String envToken = System.getenv(envName);
+        if (envToken != null && !envToken.trim().isEmpty()) {
+            System.out.println(logPrefix + " Загружен из ENV");
+            return envToken.trim();
+        }
 
-        try (InputStream is = getClass().getResourceAsStream(filename)) {
-            if (is != null) {
-                try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
-                    String loadedToken = reader.readLine();
-                    if (loadedToken != null && !loadedToken.trim().isEmpty()) {
-                        return loadedToken.trim();
-                    }
-                }
-            } else {
-                System.err.println("[TOKEN] Файл токена не найден: " + filename);
+        try (InputStream is = getClass().getResourceAsStream(resourceFile)) {
+            if (is == null) {
+                System.err.println(logPrefix + " Файл не найден: " + resourceFile);
+                return "";
             }
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(is))) {
+                String token = reader.readLine();
+                if (token != null && !token.trim().isEmpty()) {
+                    System.out.println(logPrefix + " Загружен из файла");
+                    return token.trim();
+                }
+            }
+
         } catch (IOException e) {
-            System.err.println("[TOKEN] Ошибка загрузки токена: " + e.getMessage());
+            System.err.println(logPrefix + " Ошибка чтения файла: " + e.getMessage());
         }
 
         return "";
     }
 
-
-    public String getTelegramToken(){
+    public String getTelegramToken() {
         return TelegramToken;
-
     }
-    public String getOpenRouterToken(){
+
+    public String getOpenRouterToken() {
         return OpenRouterToken;
-
     }
+
     public boolean isValidForTelegramToken() {
         return TelegramToken != null && !TelegramToken.isEmpty();
     }
-    public boolean isValidForOpenrouterToken() {return OpenRouterToken!= null && !OpenRouterToken.isEmpty();}
 
+    public boolean isValidForOpenrouterToken() {
+        return OpenRouterToken != null && !OpenRouterToken.isEmpty();
+    }
 }
-
-
-
