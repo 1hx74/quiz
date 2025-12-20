@@ -10,7 +10,6 @@ import java.util.TimerTask;
 
 /**
  * Класс для управления таймаутами дуэлей и поиска оппонентов.
- * Реализует паттерн Singleton для обеспечения единственного экземпляра в системе.
  * Использует Timer для планирования задач таймаута.
  */
 public class DuelTimeoutManager {
@@ -23,24 +22,10 @@ public class DuelTimeoutManager {
     private TimeoutNotifier notifier;
 
     /**
-     * Приватный конструктор для реализации паттерна Singleton.
      * Инициализирует ссылку на DuelMatchmaker.
      */
-    private DuelTimeoutManager() {
-        this.matchmaker = DuelMatchmaker.getInstance();
-    }
-
-    /**
-     * Возвращает единственный экземпляр DuelTimeoutManager.
-     * Синхронизирован для безопасности в многопоточной среде.
-     *
-     * @return единственный экземпляр DuelTimeoutManager
-     */
-    public static synchronized DuelTimeoutManager getInstance() {
-        if (instance == null) {
-            instance = new DuelTimeoutManager();
-        }
-        return instance;
+    public DuelTimeoutManager(DuelMatchmaker duelMatchmaker) {
+        this.matchmaker = duelMatchmaker;
     }
 
     /**

@@ -4,11 +4,9 @@ import java.util.*;
 
 /**
  * Класс для управления поиском пар для дуэли между игроками.
- * Реализует паттерн Singleton для обеспечения единственного экземпляра матчмейкера в приложении.
  * Обеспечивает подбор игроков по выбранным темам и управление активными дуэлями.
  */
 public class DuelMatchmaker {
-    private static DuelMatchmaker instance;
 
     /**
      * Карта очередей ожидания по темам.
@@ -32,26 +30,12 @@ public class DuelMatchmaker {
     private final Map<String, Integer> completedPlayers;
 
     /**
-     * Приватный конструктор для реализации паттерна Singleton.
      * Инициализирует коллекции для хранения данных матчмейкера.
      */
-    private DuelMatchmaker() {
+    public DuelMatchmaker() {
         this.waitingQueues = new HashMap<>();
         this.activePairs = new HashMap<>();
         this.completedPlayers = new HashMap<>();
-    }
-
-    /**
-     * Возвращает единственный экземпляр DuelMatchmaker.
-     * Синхронизирован для безопасности в многопоточной среде.
-     *
-     * @return единственный экземпляр DuelMatchmaker
-     */
-    public static synchronized DuelMatchmaker getInstance() {
-        if (instance == null) {
-            instance = new DuelMatchmaker();
-        }
-        return instance;
     }
 
     /**

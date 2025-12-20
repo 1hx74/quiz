@@ -2,6 +2,8 @@ package org.example;
 
 import org.example.DataMessage.Content;
 import org.example.Quiz.Users;
+import org.example.Tokens.TokenInterface;
+import org.example.Tokens.Tokens;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +23,7 @@ public class ProducerTest {
     Users users;
     private InputStream originalIn;
     private PrintStream originalOut;
+    private String TelegramToken;
 
     @TempDir
     Path tempDir;
@@ -40,6 +43,9 @@ public class ProducerTest {
 
         originalIn = System.in;
         originalOut = System.out;
+
+        TokenInterface tokens = new Tokens();
+        TelegramToken = tokens.getTelegramToken();
     }
 
     /**
@@ -56,7 +62,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerStartCommandWithoutRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content startContent = new Content(false, "chat123", "/start");
         Content[] result = producer.produce(startContent);
@@ -73,7 +79,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerStartCommandAfterRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         // Сначала регистрируем пользователя - установка имени в UserData
         users.setLeaderboardName("chat123", "TestUser");
@@ -94,7 +100,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerHelpCommand() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -112,7 +118,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerLeaderboardCommandWithoutRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content leaderboardContent = new Content(false, "chat123", "/leaderboard");
         Content[] result = producer.produce(leaderboardContent);
@@ -128,7 +134,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerLeaderboardCommandWithRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -146,7 +152,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerMenuCommandWithRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -165,7 +171,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerMenuButtonWithRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -184,7 +190,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerGenerationButtonWithoutRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content generationButtonContent = new Content(false, "chat123", GENERATION_BUTTON);
         Content[] result = producer.produce(generationButtonContent);
@@ -200,7 +206,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerGenerationButtonWithRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -218,7 +224,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerQuizButtonWithoutRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content quizButtonContent = new Content(false, "chat123", QUIZ_BUTTON);
         Content[] result = producer.produce(quizButtonContent);
@@ -234,7 +240,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerDuelButtonWithoutRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content duelButtonContent = new Content(false, "chat123", DUEL_BUTTON);
         Content[] result = producer.produce(duelButtonContent);
@@ -250,7 +256,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerSoloButtonWithoutRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content soloButtonContent = new Content(false, "chat123", SOLO_BUTTON);
         Content[] result = producer.produce(soloButtonContent);
@@ -266,7 +272,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerUnknownCommand() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -284,7 +290,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerTextMessageWithoutQuizAndRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content textContent = new Content(false, "chat123", "просто текст");
         Content[] result = producer.produce(textContent);
@@ -300,7 +306,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerTextMessageWithoutQuizWithRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -318,7 +324,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerAnswerButtonWithoutQuizAndRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content answerButtonContent = new Content(false, "chat123", A_BUTTON);
         Content[] result = producer.produce(answerButtonContent);
@@ -334,7 +340,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerNavigationButtonWithoutQuizAndRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content navButtonContent = new Content(false, "chat123", QUIZ_FORWARDS_BUTTON);
         Content[] result = producer.produce(navButtonContent);
@@ -350,7 +356,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerUnknownCallback() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -370,7 +376,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerEndQuizButtonWithoutQuiz() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -390,7 +396,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerAtTheTopButtonWithoutQuiz() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -410,7 +416,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerTopicNavigationWithoutTopicSelector() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -430,7 +436,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerUserRegistrationValidName() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         // Первое сообщение - должно запрашивать регистрацию
         Content startContent = new Content(false, "chat123", "/start");
@@ -454,7 +460,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerUserRegistrationInvalidName() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         // Сначала /start
         Content startContent = new Content(false, "chat123", "/start");
@@ -476,7 +482,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerEndQuizButtonWithRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -496,7 +502,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerTextMessageDuringRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         // Начинаем регистрацию
         Content startContent = new Content(false, "chat123", "/start");
@@ -518,7 +524,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerGetQueuedMessages() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content[] messages = producer.getQueuedMessages();
         Assertions.assertNotNull(messages, "Массив сообщений не должен быть null");
@@ -529,7 +535,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerHasQueuedMessages() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         boolean hasMessages = producer.hasQueuedMessages();
         Assertions.assertNotNull(producer, "Producer должен быть создан");
@@ -541,7 +547,7 @@ public class ProducerTest {
     @Test
     public void testProducerSetUsers() {
         Users newUsers = new Users();
-        Producer producer = new Producer(newUsers);
+        Producer producer = new Producer(newUsers, TelegramToken);
 
         Assertions.assertNotNull(producer, "Producer должен существовать");
     }
@@ -551,7 +557,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerEmptyTextMessage() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -569,7 +575,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerHelpCommandWithoutRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         Content helpContent = new Content(false, "chat123", "/help");
         Content[] result = producer.produce(helpContent);
@@ -585,7 +591,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerDuelButtonWithRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 
@@ -603,7 +609,7 @@ public class ProducerTest {
      */
     @Test
     public void testProducerSoloButtonWithRegistration() {
-        Producer producer = new Producer(users);
+        Producer producer = new Producer(users,  TelegramToken);
 
         users.setLeaderboardName("chat123", "TestUser");
 

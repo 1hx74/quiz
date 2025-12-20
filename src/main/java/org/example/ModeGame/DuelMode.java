@@ -126,7 +126,7 @@ public class DuelMode implements ModeSelector {
         this.producer = producer;
         this.chatId = chatId;
         this.userData = userData;
-        this.timeoutManager = DuelTimeoutManager.getInstance();
+        this.timeoutManager = producer.getDuelTimeoutManager();
     }
 
     /**
@@ -167,7 +167,7 @@ public class DuelMode implements ModeSelector {
     public Content[] startLocalDuelSearch(String topicName) {
         try {
             String playerName = getPlayerName();
-            DuelMatchmaker matchmaker = DuelMatchmaker.getInstance();
+            DuelMatchmaker matchmaker = producer.getDuelMatchmaker();
             DuelPair pair = matchmaker.registerForDuel(
                     chatId,
                     "local",
@@ -200,7 +200,7 @@ public class DuelMode implements ModeSelector {
     public Content[] startGeneratedDuelSearch(String topicRequest) {
         try {
             String playerName = getPlayerName();
-            DuelMatchmaker matchmaker = DuelMatchmaker.getInstance();
+            DuelMatchmaker matchmaker = producer.getDuelMatchmaker();
             DuelPair pair = matchmaker.registerForDuel(
                     chatId,
                     "generated",
@@ -323,7 +323,7 @@ public class DuelMode implements ModeSelector {
      * Обрабатывает ситуацию, когда игрок помещается в очередь ожидания.
      */
     private Content[] handleWaitingInQueue(String topicType, String topicValue) {
-        DuelMatchmaker matchmaker = DuelMatchmaker.getInstance();
+        DuelMatchmaker matchmaker = producer.getDuelMatchmaker();
         int waitingCount = matchmaker.getWaitingCount(topicType,
                 "local".equals(topicType) ? topicValue : "general");
         userData.setState("duel_searching");
@@ -350,7 +350,7 @@ public class DuelMode implements ModeSelector {
      * Отменяет поиск дуэли и возвращает пользователя в меню.
      */
     public Content[] cancelDuelSearch() {
-        DuelMatchmaker matchmaker = DuelMatchmaker.getInstance();
+        DuelMatchmaker matchmaker = producer.getDuelMatchmaker();
         String currentTopic = userData.getTopicSelection();
 
         if (currentTopic != null && !currentTopic.isEmpty()) {
@@ -392,7 +392,7 @@ public class DuelMode implements ModeSelector {
             };
         }
 
-        DuelMatchmaker matchmaker = DuelMatchmaker.getInstance();
+        DuelMatchmaker matchmaker = producer.getDuelMatchmaker();
         DuelPair pair = matchmaker.getPairForPlayer(chatId);
 
         if (pair == null) {

@@ -25,7 +25,7 @@ public class DuelMatchmakerTest {
      */
     @BeforeEach
     public void setUp() {
-        matchmaker = DuelMatchmaker.getInstance();
+        matchmaker = new DuelMatchmaker();
         matchmaker.clearAll();
     }
 

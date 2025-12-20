@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.ModeGame.Duel.DuelMatchmaker;
 import org.example.ModeGame.Duel.Timer.DuelTimeoutManager;
 import org.example.ModeGame.Duel.Timer.SearchInfo;
 import org.example.ModeGame.Duel.Timer.TimeoutNotifier;
@@ -27,7 +28,8 @@ public class DuelTimeoutManagerTest {
      */
     @BeforeEach
     public void setUp() {
-        timeoutManager = DuelTimeoutManager.getInstance();
+        DuelMatchmaker matchmaker = new DuelMatchmaker();
+        timeoutManager = new DuelTimeoutManager(matchmaker);
         timeoutManager.clearAll();
     }
 

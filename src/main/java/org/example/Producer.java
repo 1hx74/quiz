@@ -33,6 +33,8 @@ public class Producer {
     private final KeyboardService keyboardService;
     private final CreateQuiz createQuiz;
     private final MessageQueue messageQueue;
+    private DuelTimeoutManager timeoutManager;
+    private DuelMatchmaker matchmaker;
 
     // Кеш для вопросов дуэли: duelId -> AiMemory
     private final Map<String, AiMemory> duelQuestionsCache = new ConcurrentHashMap<>();
@@ -106,27 +108,43 @@ public class Producer {
      * Конструктор по умолчанию.
      * Инициализирует менеджер пользователей и сервис клавиатур.
      */
-    public Producer(Users users) {
+    public Producer(Users users, String OpenRouterToken) {
         this.users = users;
         this.keyboardService = new KeyboardService();
-        this.messageQueue = MessageQueue.getInstance();
+        this.messageQueue = new MessageQueue();
 
         // Инициализация генератора викторин
-        Tokens OpenRouterToken = new Tokens();
-        OpenRouterClient openRouterClient = new OpenRouterClient(OpenRouterToken.getOpenRouterToken());
+        OpenRouterClient openRouterClient = new OpenRouterClient(OpenRouterToken);
         this.createQuiz = new CreateQuiz(openRouterClient);
 
+        System.out.println("[PRODUCER] Producer создан с поддержкой очереди сообщений");
+    }
+
+    public void startInitTimeoutNotifier() {
         // Инициализация нотификатора таймаутов
         initTimeoutNotifier();
+    }
 
-        System.out.println("[PRODUCER] Producer создан с поддержкой очереди сообщений");
+    public void setDuelTimeoutManager(DuelTimeoutManager timeoutManager) {
+        this.timeoutManager = timeoutManager;
+    }
+
+    public void setDuelMatchmaker(DuelMatchmaker matchmaker) {
+        this.matchmaker = matchmaker;
+    }
+
+    public DuelTimeoutManager getDuelTimeoutManager() {
+        return this.timeoutManager;
+    }
+
+    public DuelMatchmaker getDuelMatchmaker() {
+        return this.matchmaker;
     }
 
     /**
      * Инициализирует нотификатор для обработки таймаутов.
      */
     private void initTimeoutNotifier() {
-        DuelTimeoutManager timeoutManager = DuelTimeoutManager.getInstance();
         timeoutManager.setNotifier(new TimeoutNotifier() {
             @Override
             public void notifySearchTimeout(String chatId, String topic) {
@@ -166,7 +184,6 @@ public class Producer {
             UserData player1Data = users.getOrCreate(player1ChatId);
             UserData player2Data = users.getOrCreate(player2ChatId);
 
-            DuelMatchmaker matchmaker = DuelMatchmaker.getInstance();
             DuelPair pair = matchmaker.getPairForPlayer(player1ChatId);
 
             if (pair == null) {
@@ -310,7 +327,6 @@ public class Producer {
 
         // Проверка на просроченный поиск дуэли
         if ("duel_searching".equals(userData.getState())) {
-            DuelTimeoutManager timeoutManager = DuelTimeoutManager.getInstance();
             if (!timeoutManager.hasActiveSearch(chatId)) {
                 // Таймаут поиска истек
                 return handleSearchTimeout(chatId, userData);
@@ -493,7 +509,6 @@ public class Producer {
         // ВАЖНО: Обновляем время активности для дуэли
         // Если пользователь в состоянии ожидания оппонента и нажимает любую кнопку
         if ("duel_waiting_opponent".equals(userData.getState())) {
-            DuelMatchmaker matchmaker = DuelMatchmaker.getInstance();
             DuelPair pair = matchmaker.getPairForPlayer(chatId);
             if (pair != null) {
                 pair.updateLastActivityTime(chatId);

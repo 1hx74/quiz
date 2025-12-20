@@ -6,7 +6,6 @@ import java.util.List;
 
 /**
  * Очередь для хранения сообщений, которые нужно отправить асинхронно.
- * Реализует паттерн Singleton для обеспечения единственного экземпляра в системе.
  * Использует потокобезопасную ConcurrentLinkedQueue для хранения сообщений.
  */
 public class MessageQueue {
@@ -14,22 +13,9 @@ public class MessageQueue {
     private final ConcurrentLinkedQueue<Content> messageQueue = new ConcurrentLinkedQueue<>();
 
     /**
-     * Приватный конструктор для реализации паттерна Singleton.
+     * конструктор
      */
-    private MessageQueue() {}
-
-    /**
-     * Возвращает единственный экземпляр MessageQueue.
-     * Синхронизирован для безопасности в многопоточной среде.
-     *
-     * @return единственный экземпляр MessageQueue
-     */
-    public static synchronized MessageQueue getInstance() {
-        if (instance == null) {
-            instance = new MessageQueue();
-        }
-        return instance;
-    }
+    public MessageQueue() {}
 
     /**
      * Добавляет сообщение в очередь.
