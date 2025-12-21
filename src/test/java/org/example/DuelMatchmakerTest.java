@@ -2,6 +2,7 @@ package org.example;
 
 import org.example.ModeGame.Duel.DuelMatchmaker;
 import org.example.ModeGame.Duel.DuelPair;
+import org.example.ModeGame.DuelMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
@@ -36,18 +37,18 @@ public class DuelMatchmakerTest {
     @Test
     public void testRegisterForDuelLocalTopicPairCreated() {
         DuelPair pair1 = matchmaker.registerForDuel(
-                "chat1", "local", "programming", "Игрок1", "programming"
+                "chat1", DuelMode.TopicType.LOCAL, "programming", "Игрок1", "programming"
         );
 
         Assertions.assertNull(pair1, "Первый игрок должен попасть в очередь");
 
         DuelPair pair2 = matchmaker.registerForDuel(
-                "chat2", "local", "programming", "Игрок2", "programming"
+                "chat2", DuelMode.TopicType.LOCAL, "programming", "Игрок2", "programming"
         );
 
         Assertions.assertNotNull(pair2, "Должна быть создана пара при совпадении темы");
         Assertions.assertEquals("programming", pair2.getTopic());
-        Assertions.assertEquals("local", pair2.getTopicType());
+        Assertions.assertEquals(DuelMode.TopicType.LOCAL, pair2.getTopicType());
         Assertions.assertTrue(pair2.containsPlayer("chat1"));
         Assertions.assertTrue(pair2.containsPlayer("chat2"));
     }
@@ -62,11 +63,11 @@ public class DuelMatchmakerTest {
         String topic2 = "Животные";
 
         matchmaker.registerForDuel(
-                "chat1", "generated", "general", "Игрок1", topic1
+                "chat1", DuelMode.TopicType.GENERATED, "general", "Игрок1", topic1
         );
 
         DuelPair pair = matchmaker.registerForDuel(
-                "chat2", "generated", "general", "Игрок2", topic2
+                "chat2", DuelMode.TopicType.GENERATED, "general", "Игрок2", topic2
         );
 
         Assertions.assertNotNull(pair);
@@ -75,6 +76,7 @@ public class DuelMatchmakerTest {
                 selectedTopic.equals(topic1) || selectedTopic.equals(topic2),
                 "Тема должна быть одной из предложенных: " + selectedTopic
         );
+        Assertions.assertEquals(DuelMode.TopicType.GENERATED, pair.getTopicType());
     }
 
     /**
@@ -84,18 +86,18 @@ public class DuelMatchmakerTest {
     @Test
     public void testDifferentLocalTopicsNoMatch() {
         DuelPair result1 = matchmaker.registerForDuel(
-                "chat1", "local", "history", "Игрок1", "history"
+                "chat1", DuelMode.TopicType.LOCAL, "history", "Игрок1", "history"
         );
 
         DuelPair result2 = matchmaker.registerForDuel(
-                "chat2", "local", "math", "Игрок2", "math"
+                "chat2", DuelMode.TopicType.LOCAL, "math", "Игрок2", "math"
         );
 
         Assertions.assertNull(result1, "Первый игрок в очереди");
         Assertions.assertNull(result2, "Второй игрок в другой очереди - пара не создана");
 
-        Assertions.assertEquals(1, matchmaker.getWaitingCount("local", "history"));
-        Assertions.assertEquals(1, matchmaker.getWaitingCount("local", "math"));
+        Assertions.assertEquals(1, matchmaker.getWaitingCount(DuelMode.TopicType.LOCAL, "history"));
+        Assertions.assertEquals(1, matchmaker.getWaitingCount(DuelMode.TopicType.LOCAL, "math"));
     }
 
     /**
@@ -104,10 +106,10 @@ public class DuelMatchmakerTest {
      */
     @Test
     public void testCancelSearch() {
-        matchmaker.registerForDuel("chat1", "local", "science", "Игрок1", "science");
+        matchmaker.registerForDuel("chat1", DuelMode.TopicType.LOCAL, "science", "Игрок1", "science");
 
         boolean isSearchingBefore = matchmaker.isSearching("chat1");
-        matchmaker.cancelSearch("chat1", "local", "science");
+        matchmaker.cancelSearch("chat1", DuelMode.TopicType.LOCAL, "science");
         boolean isSearchingAfter = matchmaker.isSearching("chat1");
 
         Assertions.assertTrue(isSearchingBefore, "Игрок должен быть в поиске после регистрации");
@@ -120,13 +122,13 @@ public class DuelMatchmakerTest {
      */
     @Test
     public void testGetWaitingCount() {
-        Assertions.assertEquals(0, matchmaker.getWaitingCount("local", "art"), "Изначально должно быть 0");
+        Assertions.assertEquals(0, matchmaker.getWaitingCount(DuelMode.TopicType.LOCAL, "art"), "Изначально должно быть 0");
 
-        matchmaker.registerForDuel("chat1", "local", "art", "Игрок1", "art");
-        Assertions.assertEquals(1, matchmaker.getWaitingCount("local", "art"));
+        matchmaker.registerForDuel("chat1", DuelMode.TopicType.LOCAL, "art", "Игрок1", "art");
+        Assertions.assertEquals(1, matchmaker.getWaitingCount(DuelMode.TopicType.LOCAL, "art"));
 
-        matchmaker.registerForDuel("chat2", "local", "art", "Игрок2", "art");
-        Assertions.assertEquals(0, matchmaker.getWaitingCount("local", "art"), "Очередь должна очиститься после создания пары");
+        matchmaker.registerForDuel("chat2", DuelMode.TopicType.LOCAL, "art", "Игрок2", "art");
+        Assertions.assertEquals(0, matchmaker.getWaitingCount(DuelMode.TopicType.LOCAL, "art"), "Очередь должна очиститься после создания пары");
     }
 
     /**
@@ -136,8 +138,8 @@ public class DuelMatchmakerTest {
     @Test
     public void testMarkPlayerCompleted() {
         // Создаем пару
-        matchmaker.registerForDuel("chat1", "local", "sport", "Игрок1", "sport");
-        DuelPair pair = matchmaker.registerForDuel("chat2", "local", "sport", "Игрок2", "sport");
+        matchmaker.registerForDuel("chat1", DuelMode.TopicType.LOCAL, "sport", "Игрок1", "sport");
+        DuelPair pair = matchmaker.registerForDuel("chat2", DuelMode.TopicType.LOCAL, "sport", "Игрок2", "sport");
         String duelId = pair.getDuelId();
 
         // Первый игрок завершает
@@ -156,8 +158,8 @@ public class DuelMatchmakerTest {
     @Test
     public void testRemovePairIfCompleted() {
         // Создаем пару
-        matchmaker.registerForDuel("chat1", "local", "music", "Игрок1", "music");
-        DuelPair pair = matchmaker.registerForDuel("chat2", "local", "music", "Игрок2", "music");
+        matchmaker.registerForDuel("chat1", DuelMode.TopicType.LOCAL, "music", "Игрок1", "music");
+        DuelPair pair = matchmaker.registerForDuel("chat2", DuelMode.TopicType.LOCAL, "music", "Игрок2", "music");
         String duelId = pair.getDuelId();
 
         // Отмечаем обоих игроков как завершивших
@@ -195,7 +197,7 @@ public class DuelMatchmakerTest {
                 try {
                     matchmaker.registerForDuel(
                             "chat" + playerNum,
-                            "local",
+                            DuelMode.TopicType.LOCAL,
                             topic,
                             "Игрок" + playerNum,
                             topic
@@ -221,7 +223,7 @@ public class DuelMatchmakerTest {
         Assertions.assertEquals(THREAD_COUNT, playersInPairs, "Все игроки должны быть в парах");
 
         // Проверяем, что очередь пуста
-        Assertions.assertEquals(0, matchmaker.getWaitingCount("local", topic),
+        Assertions.assertEquals(0, matchmaker.getWaitingCount(DuelMode.TopicType.LOCAL, topic),
                 "Очередь должна быть пустой после создания всех пар");
     }
 
@@ -232,8 +234,8 @@ public class DuelMatchmakerTest {
      */
     @Test
     public void testGetPairForPlayer() {
-        matchmaker.registerForDuel("chat1", "local", "test", "Игрок1", "test");
-        DuelPair pair = matchmaker.registerForDuel("chat2", "local", "test", "Игрок2", "test");
+        matchmaker.registerForDuel("chat1", DuelMode.TopicType.LOCAL, "test", "Игрок1", "test");
+        DuelPair pair = matchmaker.registerForDuel("chat2", DuelMode.TopicType.LOCAL, "test", "Игрок2", "test");
 
         DuelPair pairForPlayer1 = matchmaker.getPairForPlayer("chat1");
         DuelPair pairForPlayer2 = matchmaker.getPairForPlayer("chat2");
@@ -251,8 +253,8 @@ public class DuelMatchmakerTest {
     @Test
     public void testRemoveTimedOutDuel() {
         // Создаем пару
-        matchmaker.registerForDuel("chat1", "local", "timeout_test", "Игрок1", "timeout_test");
-        DuelPair pair = matchmaker.registerForDuel("chat2", "local", "timeout_test", "Игрок2", "timeout_test");
+        matchmaker.registerForDuel("chat1", DuelMode.TopicType.LOCAL, "timeout_test", "Игрок1", "timeout_test");
+        DuelPair pair = matchmaker.registerForDuel("chat2", DuelMode.TopicType.LOCAL, "timeout_test", "Игрок2", "timeout_test");
         String duelId = pair.getDuelId();
 
         // Удаляем по таймауту
@@ -268,22 +270,24 @@ public class DuelMatchmakerTest {
      * Проверяет, что методы поиска возвращают корректные результаты.
      */
     @Test
-    public void testFindPairByDuelId() throws Exception {
-        // Используем рефлексию для доступа к приватному методу
-        java.lang.reflect.Method method = DuelMatchmaker.class.getDeclaredMethod(
-                "findPairByDuelId", String.class
-        );
-        method.setAccessible(true);
-
+    public void testFindPairByDuelId() {
         // Создаем пару
-        matchmaker.registerForDuel("chat1", "local", "find_test", "Игрок1", "find_test");
-        DuelPair pair = matchmaker.registerForDuel("chat2", "local", "find_test", "Игрок2", "find_test");
+        matchmaker.registerForDuel("chat1", DuelMode.TopicType.LOCAL, "find_test", "Игрок1", "find_test");
+        DuelPair pair = matchmaker.registerForDuel("chat2", DuelMode.TopicType.LOCAL, "find_test", "Игрок2", "find_test");
         String duelId = pair.getDuelId();
 
-        // Ищем пару
-        DuelPair foundPair = (DuelPair) method.invoke(matchmaker, duelId);
+        // Ищем пару через getPairForPlayer - это публичный метод
+        DuelPair foundPairForPlayer1 = matchmaker.getPairForPlayer("chat1");
+        DuelPair foundPairForPlayer2 = matchmaker.getPairForPlayer("chat2");
 
-        Assertions.assertNotNull(foundPair, "Должна быть найдена пара по ID");
-        Assertions.assertEquals(duelId, foundPair.getDuelId());
+        Assertions.assertNotNull(foundPairForPlayer1, "Должна быть найдена пара для chat1");
+        Assertions.assertNotNull(foundPairForPlayer2, "Должна быть найдена пара для chat2");
+
+        // Проверяем, что найденные пары имеют правильный ID
+        Assertions.assertEquals(duelId, foundPairForPlayer1.getDuelId());
+        Assertions.assertEquals(duelId, foundPairForPlayer2.getDuelId());
+
+        // Проверяем, что это одна и та же пара
+        Assertions.assertEquals(foundPairForPlayer1, foundPairForPlayer2);
     }
 }

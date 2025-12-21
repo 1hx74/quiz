@@ -11,7 +11,7 @@ public class SearchInfo {
     /**
      * Конструктор для создания информации о поиске.
      *
-     * @param topicType тип темы ("local" или "generated")
+     * @param topicType тип темы ("LOCAL" или "GENERATED" как строка)
      * @param topicValue значение темы (название темы или запрос)
      */
     public SearchInfo(String topicType, String topicValue) {
@@ -22,7 +22,7 @@ public class SearchInfo {
     /**
      * Возвращает тип темы поиска.
      *
-     * @return тип темы ("local" для готовых тем или "generated" для генерации ИИ)
+     * @return тип темы (как строка "LOCAL" или "GENERATED")
      */
     public String getTopicType() {
         return topicType;
@@ -31,7 +31,7 @@ public class SearchInfo {
     /**
      * Устанавливает тип темы поиска.
      *
-     * @param topicType тип темы ("local" или "generated")
+     * @param topicType тип темы (как строка "LOCAL" или "GENERATED")
      */
     public void setTopicType(String topicType) {
         this.topicType = topicType;

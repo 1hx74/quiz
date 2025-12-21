@@ -1,5 +1,6 @@
 package org.example.ModeGame.Duel;
 
+import org.example.ModeGame.DuelMode;
 import java.util.*;
 
 /**
@@ -44,13 +45,13 @@ public class DuelMatchmaker {
      * Иначе добавляет игрока в очередь ожидания.
      *
      * @param chatId уникальный идентификатор чата игрока
-     * @param topicType тип темы ("local" или "generated")
-     * @param topicValue значение темы (для "local" - название темы, для "generated" - "general")
+     * @param topicType тип темы (enum TopicType)
+     * @param topicValue значение темы (для LOCAL - название темы, для GENERATED - "general")
      * @param playerName имя игрока для отображения
      * @param playerTopic тема, предложенная игроком (используется для дуэлей с генерацией)
      * @return объект {@link DuelPair} если пара найдена, null если игрок помещен в очередь ожидания
      */
-    public DuelPair registerForDuel(String chatId, String topicType, String topicValue,
+    public DuelPair registerForDuel(String chatId, DuelMode.TopicType topicType, String topicValue,
                                     String playerName, String playerTopic) {
         String topicKey = createTopicKey(topicType, topicValue);
 
@@ -86,15 +87,15 @@ public class DuelMatchmaker {
 
     /**
      * Создает ключ для группировки игроков по теме.
-     * Для типа "generated" всегда возвращает "generated:general".
-     * Для типа "local" возвращает "local:значение_темы".
+     * Для типа GENERATED всегда возвращает "generated:general".
+     * Для типа LOCAL возвращает "local:значение_темы".
      *
-     * @param topicType тип темы ("local" или "generated")
+     * @param topicType тип темы (enum TopicType)
      * @param topicValue значение темы
      * @return строковый ключ для группировки в очереди ожидания
      */
-    private String createTopicKey(String topicType, String topicValue) {
-        if ("generated".equals(topicType)) {
+    private String createTopicKey(DuelMode.TopicType topicType, String topicValue) {
+        if (topicType == DuelMode.TopicType.GENERATED) {
             // Для генерации - все в одной группе
             return "generated:general";
         } else {
@@ -196,9 +197,36 @@ public class DuelMatchmaker {
                         iterator.remove();
                     }
                 }
+                // Удаляем из счетчика завершивших
                 completedPlayers.remove(duelId);
                 System.out.println("[DUEL_MATCHMAKER] Дуэль полностью очищена: " + duelId);
             }
+        }
+    }
+
+    /**
+     * Удаляет дуэльную пару, завершенную по таймауту.
+     * Вызывается из Producer при обработке таймаута.
+     *
+     * @param duelId уникальный идентификатор дуэли для удаления
+     */
+    public void removeTimedOutPair(String duelId) {
+        synchronized (this) {
+            System.out.println("[DUEL_MATCHMAKER] Удаляем дуэль по таймауту: " + duelId);
+
+            // Найдем и удалим пару из activePairs
+            Iterator<Map.Entry<String, DuelPair>> iterator = activePairs.entrySet().iterator();
+            while (iterator.hasNext()) {
+                Map.Entry<String, DuelPair> entry = iterator.next();
+                if (entry.getValue().getDuelId().equals(duelId)) {
+                    System.out.println("[DUEL_MATCHMAKER] Удаляем игрока по таймауту: " + entry.getKey() + " из дуэли: " + duelId);
+                    iterator.remove();
+                }
+            }
+
+            // Удаляем из счетчика завершивших
+            completedPlayers.remove(duelId);
+            System.out.println("[DUEL_MATCHMAKER] Дуэль по таймауту полностью очищена: " + duelId);
         }
     }
 
@@ -207,10 +235,10 @@ public class DuelMatchmaker {
      * Удаляет игрока из очереди ожидания по указанной теме.
      *
      * @param chatId уникальный идентификатор чата игрока
-     * @param topicType тип темы ("local" или "generated")
+     * @param topicType тип темы (enum TopicType)
      * @param topicValue значение темы
      */
-    public void cancelSearch(String chatId, String topicType, String topicValue) {
+    public void cancelSearch(String chatId, DuelMode.TopicType topicType, String topicValue) {
         String topicKey = createTopicKey(topicType, topicValue);
 
         synchronized (this) {
@@ -247,11 +275,11 @@ public class DuelMatchmaker {
     /**
      * Возвращает количество игроков, ожидающих дуэль по указанной теме.
      *
-     * @param topicType тип темы ("local" или "generated")
+     * @param topicType тип темы (enum TopicType)
      * @param topicValue значение темы
      * @return количество игроков в очереди ожидания по указанной теме
      */
-    public int getWaitingCount(String topicType, String topicValue) {
+    public int getWaitingCount(DuelMode.TopicType topicType, String topicValue) {
         String topicKey = createTopicKey(topicType, topicValue);
 
         synchronized (this) {

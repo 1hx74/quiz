@@ -3,6 +3,7 @@ package org.example;
 import org.example.ModeGame.Duel.DuelPair;
 import org.example.ModeGame.Duel.DuelPlayer;
 import org.example.ModeGame.Duel.PlayerResults;
+import org.example.ModeGame.DuelMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +30,7 @@ public class DuelPairTest {
     public void setUp() {
         player1 = new DuelPlayer("chat1", "Игрок1", "Тема1");
         player2 = new DuelPlayer("chat2", "Игрок2", "Тема2");
-        pair = new DuelPair(player1, player2, "Тема1", "Тема2", "generated");
+        pair = new DuelPair(player1, player2, "Тема1", "Тема2", DuelMode.TopicType.GENERATED);
     }
 
     /**
@@ -191,8 +192,31 @@ public class DuelPairTest {
         pair.savePlayerResults("chat2", 7, 50000L);
         Assertions.assertTrue(pair.isCompleted());
 
-        DuelPair newPair = new DuelPair(player1, player2, "Тема1", "Тема2", "generated");
+        DuelPair newPair = new DuelPair(player1, player2, "Тема1", "Тема2", DuelMode.TopicType.GENERATED);
         newPair.markAsTimedOut();
         Assertions.assertTrue(newPair.isCompleted(), "Дуэль должна быть завершена по таймауту");
     }
+
+    /**
+     * Тестирует получение типа темы (enum).
+     */
+    @Test
+    public void testGetTopicType() {
+        Assertions.assertEquals(DuelMode.TopicType.GENERATED, pair.getTopicType());
+
+        // Тест для LOCAL темы
+        DuelPair localPair = new DuelPair(player1, player2, "История", "История", DuelMode.TopicType.LOCAL);
+        Assertions.assertEquals(DuelMode.TopicType.LOCAL, localPair.getTopicType());
+    }
+
+    /**
+     * Тестирует тему дуэли для GENERATED типа.
+     */
+    @Test
+    public void testTopicForGeneratedType() {
+        // Для GENERATED тема выбирается случайно между двумя предложенными
+        String topic = pair.getTopic();
+        Assertions.assertTrue("Тема1".equals(topic) || "Тема2".equals(topic));
+    }
+
 }

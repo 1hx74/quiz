@@ -3,6 +3,7 @@ package org.example.ModeGame.Duel.Timer;
 import org.example.ModeGame.Duel.DuelMatchmaker;
 import org.example.ModeGame.Duel.DuelPair;
 
+import org.example.ModeGame.DuelMode;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Timer;
@@ -13,7 +14,6 @@ import java.util.TimerTask;
  * Использует Timer для планирования задач таймаута.
  */
 public class DuelTimeoutManager {
-    private static DuelTimeoutManager instance;
     private final Map<String, Timer> timeoutTimers = new HashMap<>();
     private final DuelMatchmaker matchmaker;
 
@@ -45,13 +45,14 @@ public class DuelTimeoutManager {
      *
      * @param chatId уникальный идентификатор чата игрока
      * @param timeoutMillis время таймаута в миллисекундах (рекомендуется 120000 = 2 минуты)
-     * @param topicType тип темы ("local" для готовых тем или "generated" для генерации ИИ)
+     * @param topicType тип темы (enum TopicType)
      * @param topicValue значение темы (название файла для local, запрос для generated)
      */
-    public void startSearchTimeout(String chatId, long timeoutMillis, String topicType, String topicValue) {
+    public void startSearchTimeout(String chatId, long timeoutMillis,
+                                   DuelMode.TopicType topicType, String topicValue) {
         stopTimeout(chatId);
 
-        searchInfoMap.put(chatId, new SearchInfo(topicType, topicValue));
+        searchInfoMap.put(chatId, new SearchInfo(topicType.toString(), topicValue));
 
         Timer timer = new Timer(true);
         TimerTask task = new TimerTask() {
@@ -62,8 +63,12 @@ public class DuelTimeoutManager {
                 // Получаем сохраненную информацию о поиске
                 SearchInfo info = searchInfoMap.remove(chatId);
                 if (info != null) {
-                    // Корректно отменяем поиск с известной темой
-                    matchmaker.cancelSearch(chatId, info.getTopicType(), info.getTopicValue());
+                    // Преобразуем строку обратно в TopicType
+                    DuelMode.TopicType topicTypeFromString =
+                            DuelMode.TopicType.valueOf(info.getTopicType().toUpperCase());
+
+                    // отменяем поиск с известной темой
+                    matchmaker.cancelSearch(chatId, topicTypeFromString, info.getTopicValue());
                     System.out.println("[TIMEOUT_MANAGER] Поиск отменен для " + chatId +
                             ", тема: " + info.getTopicType() + ":" + info.getTopicValue());
 
@@ -74,8 +79,8 @@ public class DuelTimeoutManager {
                     }
                 } else {
                     // Если информация потеряна, отменяем все
-                    matchmaker.cancelSearch(chatId, "local", "");
-                    matchmaker.cancelSearch(chatId, "generated", "general");
+                    matchmaker.cancelSearch(chatId, DuelMode.TopicType.LOCAL, "");
+                    matchmaker.cancelSearch(chatId, DuelMode.TopicType.GENERATED, "general");
                     System.out.println("[TIMEOUT_MANAGER] Поиск отменен (без информации о теме) для " + chatId);
 
                     // ВЫЗЫВАЕМ НОТИФИКАЦИЮ С ОБЩЕЙ ТЕМОЙ

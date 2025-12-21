@@ -1,10 +1,8 @@
 package org.example.ModeGame;
 
 import org.example.DataMessage.Content;
-import org.example.ModeGame.Duel.DuelMatchmaker;
-import org.example.ModeGame.Duel.DuelPair;
+import org.example.ModeGame.Duel.*;
 import org.example.ModeGame.Duel.Timer.DuelTimeoutManager;
-import org.example.ModeGame.Duel.PlayerResults;
 import org.example.Producer;
 import org.example.Quiz.UserData;
 
@@ -14,6 +12,15 @@ import org.example.Quiz.UserData;
  * Режим поддерживает как готовые темы из базы данных, так и генерацию тем с помощью ИИ.
  */
 public class DuelMode implements ModeSelector {
+
+    /**
+     * Тип темы для дуэли.
+     */
+    public enum TopicType {
+        LOCAL,      // соответствует строке "local"
+        GENERATED   // соответствует строке "generated"
+    }
+
     private final Producer producer;
     private final String chatId;
     private final UserData userData;
@@ -170,7 +177,7 @@ public class DuelMode implements ModeSelector {
             DuelMatchmaker matchmaker = producer.getDuelMatchmaker();
             DuelPair pair = matchmaker.registerForDuel(
                     chatId,
-                    "local",
+                    TopicType.LOCAL,
                     topicName,
                     playerName,
                     topicName
@@ -179,7 +186,7 @@ public class DuelMode implements ModeSelector {
             if (pair != null) {
                 return handleLocalMatchFound(pair, topicName);
             } else {
-                return handleWaitingInQueue("local", topicName);
+                return handleWaitingInQueue(TopicType.LOCAL, topicName);
             }
         }catch (IllegalStateException e) {
             return new Content[] {
@@ -203,7 +210,7 @@ public class DuelMode implements ModeSelector {
             DuelMatchmaker matchmaker = producer.getDuelMatchmaker();
             DuelPair pair = matchmaker.registerForDuel(
                     chatId,
-                    "generated",
+                    TopicType.GENERATED,
                     "general",
                     playerName,
                     topicRequest
@@ -212,7 +219,7 @@ public class DuelMode implements ModeSelector {
             if (pair != null) {
                 return handleGeneratedMatchFound(pair, topicRequest);
             } else {
-                return handleWaitingInQueue("generated", topicRequest);
+                return handleWaitingInQueue(TopicType.GENERATED, topicRequest);
             }
         }catch (IllegalStateException e) {
             return new Content[] {
@@ -322,18 +329,18 @@ public class DuelMode implements ModeSelector {
     /**
      * Обрабатывает ситуацию, когда игрок помещается в очередь ожидания.
      */
-    private Content[] handleWaitingInQueue(String topicType, String topicValue) {
+    private Content[] handleWaitingInQueue(TopicType topicType, String topicValue) {
         DuelMatchmaker matchmaker = producer.getDuelMatchmaker();
         int waitingCount = matchmaker.getWaitingCount(topicType,
-                "local".equals(topicType) ? topicValue : "general");
+                topicType == TopicType.LOCAL ? topicValue : "general");
         userData.setState("duel_searching");
 
         // Запускаем таймер поиска (2 минуты) с указанием темы
         timeoutManager.startSearchTimeout(chatId, 120000, topicType,
-                "local".equals(topicType) ? topicValue : "general");
+                topicType == TopicType.LOCAL ? topicValue : "general");
 
         String topicInfo;
-        if ("local".equals(topicType)) {
+        if (topicType == TopicType.LOCAL) {
             topicInfo = String.format(LOCAL_TOPIC_INFO, topicValue);
         } else {
             topicInfo = String.format(GENERATED_TOPIC_INFO, topicValue);
@@ -354,10 +361,10 @@ public class DuelMode implements ModeSelector {
         String currentTopic = userData.getTopicSelection();
 
         if (currentTopic != null && !currentTopic.isEmpty()) {
-            matchmaker.cancelSearch(chatId, "local", currentTopic);
+            matchmaker.cancelSearch(chatId, TopicType.LOCAL, currentTopic);
         }
 
-        matchmaker.cancelSearch(chatId, "generated", "general");
+        matchmaker.cancelSearch(chatId, TopicType.GENERATED, "general");
 
         timeoutManager.stopTimeout(chatId);
 
@@ -441,7 +448,7 @@ public class DuelMode implements ModeSelector {
         }
     }
     /**
-     * Обрабатывает ситуацию, когда оба игрока завершили дуэль.
+     * Обрабатывает ситуацию, когда оба игрока завершили дуэли.
      * Сравнивает результаты, определяет победителя, отправляет сообщения обоим игрокам
      * и выполняет очистку ресурсов.
      *

@@ -1,5 +1,6 @@
 package org.example.ModeGame.Duel;
 
+import org.example.ModeGame.DuelMode;
 import java.util.UUID;
 import java.util.Random;
 
@@ -12,7 +13,7 @@ public class DuelPair {
     private final DuelPlayer player1;
     private final DuelPlayer player2;
     private final String topic;
-    private final String topicType;
+    private final DuelMode.TopicType topicType; //String → DuelMode.TopicType
     private final String player1Topic;
     private final String player2Topic;
     private final long createdTime;
@@ -37,10 +38,10 @@ public class DuelPair {
      * @param player2 второй игрок дуэли
      * @param player1Topic тема, предложенная первым игроком
      * @param player2Topic тема, предложенная вторым игроком
-     * @param topicType тип темы ("local" для готовых тем, "generated" для генерации ИИ)
+     * @param topicType тип темы (enum TopicType)
      */
     public DuelPair(DuelPlayer player1, DuelPlayer player2,
-                    String player1Topic, String player2Topic, String topicType) {
+                    String player1Topic, String player2Topic, DuelMode.TopicType topicType) {
         this.player1 = player1;
         this.player2 = player2;
         this.player1Topic = player1Topic;
@@ -49,10 +50,12 @@ public class DuelPair {
         this.createdTime = System.currentTimeMillis();
         this.duelId = UUID.randomUUID().toString();
 
-        if ("generated".equals(topicType)) {
+        // Определяем тему для дуэли
+        if (topicType == DuelMode.TopicType.GENERATED) {
             // Случайный выбор между темами игроков
             this.topic = random.nextBoolean() ? player1Topic : player2Topic;
         } else {
+            // Для локальной темы - тема одинаковая у обоих
             this.topic = player1Topic;
         }
     }
@@ -155,7 +158,7 @@ public class DuelPair {
     public void setFirstPlayerCompletionTime(String playerChatId) {
         this.firstCompletedPlayerId = playerChatId;
         this.firstCompletionTime = System.currentTimeMillis();
-        this.lastActivityTime = this.firstCompletionTime; // Инициализируем время активности
+        this.lastActivityTime = this.firstCompletionTime;
         System.out.println("[DUEL_PAIR] Установлено время завершения для игрока " + playerChatId +
                 ", время активности инициализировано: " + lastActivityTime);
     }
@@ -218,7 +221,7 @@ public class DuelPair {
         }
 
         long timeSinceLastActivity = System.currentTimeMillis() - lastActivityTime;
-        boolean expired = timeSinceLastActivity > 120000; // 2 минуты = 120000 мс
+        boolean expired = timeSinceLastActivity > 120000;
 
         if (expired) {
             System.out.println("[DUEL_PAIR] Таймаут истек для дуэли " + duelId +
@@ -340,11 +343,13 @@ public class DuelPair {
     public DuelPlayer getPlayer1() { return player1; }
     public DuelPlayer getPlayer2() { return player2; }
     public String getTopic() { return topic; }
-    public String getTopicType() { return topicType; }
+    public DuelMode.TopicType getTopicType() { return topicType; }
     public long getCreatedTime() { return createdTime; }
     public String getDuelId() { return duelId; }
     public String getPlayer1Topic() { return player1Topic; }
     public String getPlayer2Topic() { return player2Topic; }
+
+    // Геттеры для отладки
     public Integer getPlayer1Score() { return player1Score; }
     public Long getPlayer1Time() { return player1Time; }
     public Integer getPlayer2Score() { return player2Score; }
@@ -360,7 +365,7 @@ public class DuelPair {
     public String toString() {
         return String.format("DuelPair{player1=%s, player2=%s, topic='%s', type='%s', duelId='%s', " +
                         "p1Score=%s, p2Score=%s, firstCompleted=%s, lastActivity=%s, timedOut=%s}",
-                player1.getChatId(), player2.getChatId(), topic, topicType, duelId,
+                player1.getChatId(), player2.getChatId(), topic, topicType.toString(), duelId,
                 player1Score, player2Score, firstCompletedPlayerId, lastActivityTime, duelTimedOut);
     }
 }
