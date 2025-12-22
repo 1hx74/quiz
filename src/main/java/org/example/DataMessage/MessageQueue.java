@@ -9,7 +9,6 @@ import java.util.List;
  * Использует потокобезопасную ConcurrentLinkedQueue для хранения сообщений.
  */
 public class MessageQueue {
-    private static MessageQueue instance;
     private final ConcurrentLinkedQueue<Content> messageQueue = new ConcurrentLinkedQueue<>();
 
     /**

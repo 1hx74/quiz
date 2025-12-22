@@ -52,7 +52,7 @@ public class DuelTimeoutManager {
                                    DuelMode.TopicType topicType, String topicValue) {
         stopTimeout(chatId);
 
-        searchInfoMap.put(chatId, new SearchInfo(topicType.toString(), topicValue));
+        searchInfoMap.put(chatId, new SearchInfo(topicType, topicValue));
 
         Timer timer = new Timer(true);
         TimerTask task = new TimerTask() {
@@ -64,17 +64,17 @@ public class DuelTimeoutManager {
                 SearchInfo info = searchInfoMap.remove(chatId);
                 if (info != null) {
                     // Преобразуем строку обратно в TopicType
-                    DuelMode.TopicType topicTypeFromString =
-                            DuelMode.TopicType.valueOf(info.getTopicType().toUpperCase());
+                    DuelMode.TopicType savedTopicType = info.getTopicType();
+                    String savedTopicValue = info.getTopicValue();
 
                     // отменяем поиск с известной темой
-                    matchmaker.cancelSearch(chatId, topicTypeFromString, info.getTopicValue());
+                    matchmaker.cancelSearch(chatId, savedTopicType, savedTopicValue);
                     System.out.println("[TIMEOUT_MANAGER] Поиск отменен для " + chatId +
-                            ", тема: " + info.getTopicType() + ":" + info.getTopicValue());
+                            ", тема: " + savedTopicType + ":" + savedTopicValue);
 
                     // ВЫЗЫВАЕМ НОТИФИКАЦИЮ
                     if (notifier != null) {
-                        notifier.notifySearchTimeout(chatId, info.getTopicValue());
+                        notifier.notifySearchTimeout(chatId, savedTopicValue);
                         System.out.println("[TIMEOUT_MANAGER] Вызвана нотификация поиска для " + chatId);
                     }
                 } else {

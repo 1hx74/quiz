@@ -1,20 +1,23 @@
 package org.example.ModeGame.Duel.Timer;
 
+
+import org.example.ModeGame.DuelMode.TopicType;
+
 /**
  * Класс для хранения информации о поиске дуэли.
  * Используется для корректной отмены поиска при таймауте.
  */
 public class SearchInfo {
-    private String topicType;
+    private TopicType topicType;
     private String topicValue;
 
     /**
      * Конструктор для создания информации о поиске.
      *
-     * @param topicType тип темы ("LOCAL" или "GENERATED" как строка)
+     * @param topicType тип темы (TopicType.LOCAL или TopicType.GENERATED)
      * @param topicValue значение темы (название темы или запрос)
      */
-    public SearchInfo(String topicType, String topicValue) {
+    public SearchInfo(TopicType topicType, String topicValue) {
         this.topicType = topicType;
         this.topicValue = topicValue;
     }
@@ -22,25 +25,25 @@ public class SearchInfo {
     /**
      * Возвращает тип темы поиска.
      *
-     * @return тип темы (как строка "LOCAL" или "GENERATED")
+     * @return тип темы (TopicType)
      */
-    public String getTopicType() {
+    public TopicType getTopicType() {
         return topicType;
     }
 
     /**
      * Устанавливает тип темы поиска.
      *
-     * @param topicType тип темы (как строка "LOCAL" или "GENERATED")
+     * @param topicType тип темы (TopicType)
      */
-    public void setTopicType(String topicType) {
+    public void setTopicType(TopicType topicType) {
         this.topicType = topicType;
     }
 
     /**
      * Возвращает значение темы поиска.
      *
-     * @return значение темы (название файла для "local", запрос для "generated")
+     * @return значение темы (название файла для LOCAL, запрос для GENERATED)
      */
     public String getTopicValue() {
         return topicValue;
@@ -49,7 +52,7 @@ public class SearchInfo {
     /**
      * Устанавливает значение темы поиска.
      *
-     * @param topicValue значение темы (название файла для "local", запрос для "generated")
+     * @param topicValue значение темы (название файла для LOCAL, запрос для GENERATED)
      */
     public void setTopicValue(String topicValue) {
         this.topicValue = topicValue;
@@ -62,6 +65,6 @@ public class SearchInfo {
      */
     @Override
     public String toString() {
-        return topicType + ":" + topicValue;
+        return topicType.toString() + ":" + topicValue;
     }
 }

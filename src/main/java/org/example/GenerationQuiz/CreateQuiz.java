@@ -71,7 +71,7 @@ public class CreateQuiz {
     /**
      * Парсит ответ от ИИ и создает объект AiMemory
      */
-    private AiMemory parseQuizResponse(String aiResponse, String topic) {
+    public AiMemory parseQuizResponse(String aiResponse, String topic) {
         String cleanResponse = aiResponse.trim();
 
         // пытаемся извлечь JSON

@@ -7,25 +7,33 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
-import java.lang.reflect.Method;
-
+/**
+ * Тестовый класс для проверки парсинга JSON-ответов от ИИ.
+ * Проверяет корректность преобразования JSON-строк в объекты AiMemory.
+ * У тестов есть вспомогательный класс TestCreateQuiz, который наследует CreateQuiz
+ * и делает его публичным
+ */
 public class ParserTest {
 
-    private CreateQuiz createQuiz;
-    private Method parseMethod;
+    private CreateQuiz testQuiz;
 
+    /**
+     * Метод, выполняемый перед каждым тестом.
+     * Инициализирует тестовый объект TestCreateQuiz с null-клиентом.
+     */
     @BeforeEach
-    public void setUp() throws Exception {
-        createQuiz = new CreateQuiz(null);
-        parseMethod = CreateQuiz.class.getDeclaredMethod("parseQuizResponse", String.class, String.class);
-        parseMethod.setAccessible(true);
+    public void setUp() {
+        testQuiz = new CreateQuiz(null);
     }
 
     /**
-     * Тест правильного парсинга JSON.
+     * Тестирует парсинг корректного JSON без код-блоков.
+     * Проверяет, что парсинг завершается без ошибок, создаётся объект AiMemory
+     * с правильным количеством вопросов, текст вопросов и варианты ответов
+     * соответствуют ожидаемым, правильные ответы определяются корректно.
      */
     @Test
-    public void testParseCorrectJson() throws Exception {
+    public void testParseCorrectJson() {
         String json = """
         {
           "quiz_topic": "Тест",
@@ -36,15 +44,15 @@ public class ParserTest {
               "correct_answer": 0
             },
             {
-              "question": "Вопрос 2",\s
+              "question": "Вопрос 2",
               "options": ["1", "2", "3", "4"],
               "correct_answer": 2
             }
           ]
         }
-       \s""";
+        """;
 
-        AiMemory memory = (AiMemory) parseMethod.invoke(createQuiz, json, "Тест");
+        AiMemory memory = testQuiz.parseQuizResponse(json, "Тест");
 
         Assertions.assertNotNull(memory);
         Assertions.assertEquals(2, memory.getData().length);
@@ -53,20 +61,21 @@ public class ParserTest {
         DataQuestion q1 = memory.getData()[0];
         Assertions.assertEquals("Вопрос 1", q1.getQuestion());
         Assertions.assertArrayEquals(new String[]{"A", "B", "C", "D"}, q1.getOptions());
-        Assertions.assertTrue(q1.validAnswer(0)); // Правильный ответ A (индекс 0)
+        Assertions.assertTrue(q1.validAnswer(0));
 
         // Проверяем второй вопрос
         DataQuestion q2 = memory.getData()[1];
         Assertions.assertEquals("Вопрос 2", q2.getQuestion());
         Assertions.assertArrayEquals(new String[]{"1", "2", "3", "4"}, q2.getOptions());
-        Assertions.assertTrue(q2.validAnswer(2)); // Правильный ответ 3 (индекс 2)
+        Assertions.assertTrue(q2.validAnswer(2));
     }
 
     /**
-     * Тест парсинга JSON с код блоками.
+     * Тестирует парсинг JSON, обёрнутого в код-блоки markdown.
+     * Проверяет, что парсер корректно извлекает JSON из блоков ```json и парсит его.
      */
     @Test
-    public void testParseJsonWithCodeBlocks() throws Exception {
+    public void testParseJsonWithCodeBlocks() {
         String json = """
         ```json
         {
@@ -82,37 +91,41 @@ public class ParserTest {
         ```
         """;
 
-        AiMemory memory = (AiMemory) parseMethod.invoke(createQuiz, json, "Наука");
+        AiMemory memory = testQuiz.parseQuizResponse(json, "Наука");
 
         Assertions.assertNotNull(memory);
         Assertions.assertEquals(1, memory.getData().length);
 
         DataQuestion question = memory.getData()[0];
         Assertions.assertEquals("Сколько планет?", question.getQuestion());
-        Assertions.assertTrue(question.validAnswer(0)); // Правильный ответ 8 (индекс 0)
+        Assertions.assertTrue(question.validAnswer(0));
     }
 
     /**
-     * Тест неправильного JSON.
+     * Тестирует обработку некорректного JSON.
+     * Ожидается, что метод выбросит RuntimeException при попытке парсинга
+     * синтаксически неправильного JSON.
      */
     @Test
     public void testParseIncorrectJson() {
         String invalidJson = "{invalid json}";
 
-        Assertions.assertThrows(Exception.class, () ->
-                parseMethod.invoke(createQuiz, invalidJson, "Ошибка")
+        Assertions.assertThrows(RuntimeException.class, () ->
+                testQuiz.parseQuizResponse(invalidJson, "Ошибка")
         );
     }
 
     /**
-     * Тест пустого JSON.
+     * Тестирует обработку пустого JSON объекта.
+     * Ожидается, что метод выбросит RuntimeException при попытке парсинга
+     * JSON, который не содержит обязательных полей.
      */
     @Test
     public void testParseEmptyJson() {
         String emptyJson = "{}";
 
-        Assertions.assertThrows(Exception.class, () ->
-                parseMethod.invoke(createQuiz, emptyJson, "Пусто")
+        Assertions.assertThrows(RuntimeException.class, () ->
+                testQuiz.parseQuizResponse(emptyJson, "Пусто")
         );
     }
 }

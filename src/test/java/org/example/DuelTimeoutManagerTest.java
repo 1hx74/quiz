@@ -50,7 +50,7 @@ public class DuelTimeoutManagerTest {
         // Проверяем сохраненную информацию о поиске
         SearchInfo searchInfo = timeoutManager.getSearchInfo("chat123");
         Assertions.assertNotNull(searchInfo, "Информация о поиске должна быть сохранена");
-        Assertions.assertEquals("LOCAL", searchInfo.getTopicType());
+        Assertions.assertEquals(DuelMode.TopicType.LOCAL, searchInfo.getTopicType());
         Assertions.assertEquals("programming", searchInfo.getTopicValue());
     }
 
@@ -212,7 +212,7 @@ public class DuelTimeoutManagerTest {
         // Проверяем, что информация о поиске установлена
         SearchInfo info1 = timeoutManager.getSearchInfo("chatRestart");
         Assertions.assertNotNull(info1);
-        Assertions.assertEquals("LOCAL", info1.getTopicType());
+        Assertions.assertEquals(DuelMode.TopicType.LOCAL, info1.getTopicType());
         Assertions.assertEquals("topicOld", info1.getTopicValue());
 
         // Немного ждем
@@ -224,7 +224,7 @@ public class DuelTimeoutManagerTest {
         // Проверяем, что информация о поиске обновилась
         SearchInfo info2 = timeoutManager.getSearchInfo("chatRestart");
         Assertions.assertNotNull(info2);
-        Assertions.assertEquals("GENERATED", info2.getTopicType());
+        Assertions.assertEquals(DuelMode.TopicType.GENERATED, info2.getTopicType());
         Assertions.assertEquals("topicNew", info2.getTopicValue());
 
         // Ждем срабатывания таймаута
@@ -236,7 +236,7 @@ public class DuelTimeoutManagerTest {
         Assertions.assertEquals("topicNew", lastNotifiedTopic[0], "Должна быть новая тема");
 
         // Проверяем, что после срабатывания таймаута поиск неактивен
-        System.out.println(timeoutManager.hasActiveSearch("chatRestart"));
+        System.out.println(timeoutManager.hasActiveSearch("chatRestart")); // Добавленно для отладки
         Assertions.assertFalse(timeoutManager.hasActiveSearch("chatRestart"), "Поиск должен быть неактивен после таймаута");
     }
 
@@ -250,7 +250,7 @@ public class DuelTimeoutManagerTest {
         // Проверяем, что информация сохранена
         SearchInfo infoBefore = timeoutManager.getSearchInfo("chatInfo");
         Assertions.assertNotNull(infoBefore);
-        Assertions.assertEquals("LOCAL", infoBefore.getTopicType());
+        Assertions.assertEquals(DuelMode.TopicType.LOCAL, infoBefore.getTopicType());
 
         // Удаляем информацию
         timeoutManager.removeSearchInfo("chatInfo");
